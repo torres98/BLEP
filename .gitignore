@@ -1,2 +1,5 @@
+#tmp folder
+.tmp/
+
 #for binary files
 *.out

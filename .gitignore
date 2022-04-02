@@ -1,5 +1,6 @@
-#tmp folder
-.tmp/
+# folders
+__pycache__
+tmp
 
 #for binary files
 *.out

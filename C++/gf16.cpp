@@ -1,11 +1,10 @@
-#include <cstdint>
-#include <ostream>
-
-#include "gf4.cpp"
-#include "gf16_lookup.cpp"
-
 #ifndef _GF16
 #define _GF16
+
+#include <cstdint>
+#include <ostream>
+#include "gf4.cpp"
+#include "gf16_lookup.cpp"
 
 uint8_t gf16_add(uint8_t a, uint8_t b) {
     return gf4_add(a >> 2, b >> 2) << 2 | gf4_add(a & 0x3, b & 0x3);

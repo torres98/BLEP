@@ -1,3 +1,6 @@
+#ifndef _UTILS
+#define _UTILS
+
 #include <random>
 #include <cstring> //for memcpy
 #include <algorithm> //for shuffle
@@ -11,9 +14,6 @@
 #define string std::string
 #define endl std::endl
 #define cout std::cout
-
-#ifndef _UTILS
-#define _UTILS
 
 /**************/
 // FILE UTILS //

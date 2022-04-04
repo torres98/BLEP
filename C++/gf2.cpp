@@ -1,7 +1,7 @@
-#include <cstdint>
-
 #ifndef _GF2
 #define _GF2
+
+#include <cstdint>
 
 uint8_t gf2_add(uint8_t a, uint8_t b) {
     return a ^ b;

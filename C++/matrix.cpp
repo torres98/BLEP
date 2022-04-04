@@ -1,8 +1,8 @@
-#include <iostream>
-#include <sstream>
-
 #ifndef _MATRIX
 #define _MATRIX
+
+#include <iostream>
+#include <sstream>
 
 template <typename Element>
 class Matrix {

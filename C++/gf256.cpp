@@ -1,11 +1,10 @@
-#include <cstdint>
-#include <ostream>
-
-#include "gf16.cpp"
-#include "gf256_lookup.cpp"
-
 #ifndef _GF256
 #define _GF256
+
+#include <cstdint>
+#include <ostream>
+#include "gf16.cpp"
+#include "gf256_lookup.cpp"
 
 uint8_t gf256_add(uint8_t a, uint8_t b) {
     return gf16_add(a >> 4, b >> 4) << 4 | gf16_add(a & 0xf, b & 0xf);

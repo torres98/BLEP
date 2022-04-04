@@ -1,7 +1,7 @@
-#include "matrix.cpp"
-
 #ifndef _STANDARD_VERIFICATION
 #define _STANDARD_VERIFICATION
+
+#include "matrix.cpp"
 
 template <typename Element>
 bool verify_signature(Matrix<Element> &M, Matrix<Element> &v) {

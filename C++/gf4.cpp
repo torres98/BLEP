@@ -1,8 +1,8 @@
-#include <cstdint>
-#include "gf2.cpp"
-
 #ifndef _GF4
 #define _GF4
+
+#include <cstdint>
+#include "gf2.cpp"
 
 uint8_t gf4_add(uint8_t a, uint8_t b) {
     return gf2_add(a >> 1, b >> 1) << 1 | gf2_add(a & 0x1, b & 0x1);

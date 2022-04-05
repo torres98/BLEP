@@ -4,7 +4,7 @@
 
 // make it step by step bro
 template <typename Element>
-bool progVer(Matrix<Element> &M, Matrix<Element> &v, unsigned int t) {
+bool progVer(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
 
     if (t == 0)
         return false;
@@ -15,7 +15,7 @@ bool progVer(Matrix<Element> &M, Matrix<Element> &v, unsigned int t) {
 }
 
 template <typename Element>
-bool progVerRand(Matrix<Element> &M, Matrix<Element> &v, unsigned int t) {
+bool progVerRand(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
 
     if (t == 0)
         return false;

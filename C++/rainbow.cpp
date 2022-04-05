@@ -68,25 +68,25 @@ class Rainbow {
             M = extract_public_key(pk_path);
         }
 
-        static Matrix<gf> get_signature_vector(const string &signature_path, string message_path) {
+        static Vector<gf> get_signature_vector(const string &signature_path, string message_path) {
 
             // signature vector
-            Matrix<gf> v = Matrix<gf>(N + n_polynomials, 1);
+            Vector<gf> v = Vector<gf>(N + n_polynomials);
 
             // PARSE SIGNATURE
             string signature_str = read(signature_path);
             unsigned int z_offset = signature_str.find("=") + 2, salt_offset = z_offset + n_variables * element_hex_size;
 
             for (unsigned int i = 0; i < n_variables; i++)
-                v[i][0] = gf(stoi(signature_str.substr(z_offset + element_hex_size*i, element_hex_size), 0, 16));
+                v[i] = gf(stoi(signature_str.substr(z_offset + element_hex_size*i, element_hex_size), 0, 16));
 
             if (element_hex_size == 1) {
                 gf tmp;
 
                 for (unsigned int i = 0; i < n_variables; i+=2) {
-                    tmp = v[i+1][0];
-                    v[i+1][0] = v[i][0];
-                    v[i][0] = tmp;
+                    tmp = v[i+1];
+                    v[i+1] = v[i];
+                    v[i] = tmp;
                 }
             }
 
@@ -95,7 +95,7 @@ class Rainbow {
 
             for (unsigned int i = n_variables; i > 0; i--)
                 for (unsigned int j = n_variables; j >= i; j--)
-                    v[h--][0] = v[i-1][0] * v[j-1][0];
+                    v[h--] = v[i-1] * v[j-1];
 
             
             // PARSE MESSAGE
@@ -126,12 +126,12 @@ class Rainbow {
             // insert the final digest
             if (element_hex_size == 1) {
                 for (unsigned int i = 0; i < n_polynomials; i+=2) {
-                    *v[N + i] = gf(digest[i/2] >> 4);
-                    *v[N + (i+1)] = gf(digest[i/2] & 0xf);
+                    v[N + i] = gf(digest[i/2] >> 4);
+                    v[N + (i+1)] = gf(digest[i/2] & 0xf);
                 }
             } else {
                 for (unsigned int i = 0; i < n_polynomials; i++)
-                    *v[N + i] = gf(digest[i]);
+                    v[N + i] = gf(digest[i]);
             }
 
             return v;
@@ -201,12 +201,12 @@ int main(int argc, char *argv[]) {
         throw exception();
     }*/
 
-    Matrix<gf> v = Rainbow::get_signature_vector(signature_path, message_path);
+    Vector<gf> v = Rainbow::get_signature_vector(signature_path, message_path);
 
     cout << "VERIFICATION: " << verify_signature(R.M, v) << endl;
 
     Matrix<gf> Z = offVer(R.M, 1);
-    Matrix<gf> v_guessed = Matrix<gf>(v.rows, v.columns);
+    Vector<gf> v_guessed = Vector<gf>(v.rows);
     gf beta = gf(n / 2);
     unsigned int t = 1;
 

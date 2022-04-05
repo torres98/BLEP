@@ -75,9 +75,10 @@ class Matrix {
             return true;
         }
 
-        Element* operator[](unsigned int i) {
+        //Seems like i won't be needing it
+        /*Element* operator[](unsigned int i) {
             return M + i*columns;
-        }
+        }*/
 
         Element* operator[](unsigned int i) const {
             return M + i*columns;
@@ -163,5 +164,18 @@ std::ostream& operator<<(std::ostream &s, const Matrix<Element> &A) {
 
     return s;
 }
+
+// for now it's just a column vector
+template <typename Element>
+class Vector: public Matrix<Element> {
+
+    public:
+        Vector(unsigned int elements) : Matrix<Element>(elements, 1) {}
+
+    Element& operator[](unsigned int i) {
+        return this -> M[i];
+    }
+
+};
 
 #endif

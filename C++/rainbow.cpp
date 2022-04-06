@@ -3,7 +3,7 @@
 #include "efficient_verification.cpp"
 #include "progressive_verification.cpp"
 
-#define VERSION 3
+#define VERSION 1
 #define SAMPLE_SIZE 10000
 
 #if VERSION == 1
@@ -205,21 +205,29 @@ int main(int argc, char *argv[]) {
 
     cout << "VERIFICATION: " << verify_signature(R.M, v) << endl;
 
-    Matrix<gf> Z = offVer(R.M, 1);
     Vector<gf> v_guessed = Vector<gf>(v.rows);
     gf beta = gf(n / 2);
-    unsigned int t = 1;
 
-    unsigned int efficient_error_count = 0, progressive_error_count = 0;
+    // for efficient verification
+    unsigned int k = 3;
+    Matrix<gf> Z = offVer(R.M, k);
+
+    // for progressive verification
+    unsigned int t = 2;
+
+    unsigned int efficient_error_count = 0, progressive_error_count = 0, efficient_progressive_error_count = 0;
 
     for (int i = 0; i < SAMPLE_SIZE; i++) {
         fill_matrix_randomly(v_guessed, 0, beta);
 
-        /*if (verify_signature(Z, v_guessed) && !verify_signature(R.M, v_guessed))
-            efficient_error_count++;*/
+        if (verify_signature(Z, v_guessed) && !verify_signature(R.M, v_guessed))
+            efficient_error_count++;
 
         if (progVerRand(R.M, v_guessed, t) && !verify_signature(R.M, v_guessed))
             progressive_error_count++;
+
+        if (progVerRand(Z, v_guessed, t) && !verify_signature(R.M, v_guessed))
+            efficient_progressive_error_count++;
     }
 
     cout << "EFFICIENT VERIFICATION STATS" << endl;
@@ -229,5 +237,9 @@ int main(int argc, char *argv[]) {
     cout << "PROGRESSIVE VERIFICATION STATS" << endl;
     cout << "Error percentage: " << (double) progressive_error_count / SAMPLE_SIZE * 100 << "%" << endl;
     cout << "Security bits: " << ((progressive_error_count == 0) ? 0: log2((double) progressive_error_count / SAMPLE_SIZE)) << endl << endl;
+
+    cout << "EFFICIENT+PROGRESSIVE VERIFICATION STATS" << endl;
+    cout << "Error percentage: " << (double) efficient_progressive_error_count / SAMPLE_SIZE * 100 << "%" << endl;
+    cout << "Security bits: " << ((efficient_progressive_error_count == 0) ? 0: log2((double) efficient_progressive_error_count / SAMPLE_SIZE)) << endl << endl;
 
 }

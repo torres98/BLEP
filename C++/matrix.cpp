@@ -48,11 +48,7 @@ class Matrix {
             columns = column_f - column_i;
             M = new Element[rows * columns];
 
-            for (unsigned int i = 0; i < rows; i++)
-                memcpy((*this)[i], A.M + (row_i + i) * A.columns, columns * sizeof(Element));
-
-                /*for (unsigned int j = 0; j < columns; j++)
-                    (*this)[i][j] = A.M[(row_i + i)*A.columns + (column_i + j)];*/
+            memcpy(this -> M, &A.M[row_i * A.columns], rows * columns * sizeof(Element));
 
         }
 
@@ -115,10 +111,7 @@ class Matrix {
                 M = new Element[rows * columns];
             }
 
-            for (unsigned int i = 0; i < rows; i++)
-                memcpy((*this)[i], A[i], columns * sizeof(Element));
-                /*for (unsigned int j = 0; j < columns; j++)
-                    (*this)[i][j] = A.M[i*A.columns + j];*/
+            memcpy(this -> M, A.M, rows * columns * sizeof(Element));
 
             return *this;
 

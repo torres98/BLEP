@@ -25,7 +25,7 @@ class Matrix {
 
             for (unsigned int i = 0; i < rows; i++)
                 for (unsigned int j = 0; j < columns; j++)
-                    (*this)[i][j] = A.M[i*A.columns + j];
+                    (*this)[i][j] = A[i][j];
 
         }
 
@@ -84,7 +84,7 @@ class Matrix {
             
             if (columns != A.rows) {
                 std::ostringstream error_log;
-                error_log << "Incompatible sizes for product between matrices of size " << this->rows << "x" << this->columns << " and " << A.rows << "x" << A.columns;
+                error_log << "Incompatible sizes for product between matrices of size " << rows << "x" << columns << " and " << A.rows << "x" << A.columns;
                 throw std::invalid_argument(error_log.str());
             }
 

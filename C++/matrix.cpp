@@ -128,16 +128,16 @@ class Matrix {
 
 template <typename Element>
 std::ostream& operator<<(std::ostream &s, const Matrix<Element> &A) {
-    std::string output = "[";
-    unsigned int rows, columns;
 
-    if (A.columns == 1) {
+    if (A.rows == 0 || A.columns == 0) {
+        s << "[]";
+    } else if (A.columns == 1) {
         s << "[";
 
         for (unsigned int i = 0; i < A.rows - 1; i++)
             s << A.M[i] << ", ";
 
-        s << A.M[A.rows - 1];
+        s << A.M[A.rows - 1] << "]";;
 
     } else {
 
@@ -147,13 +147,13 @@ std::ostream& operator<<(std::ostream &s, const Matrix<Element> &A) {
             s << "[";
 
             for (unsigned int j = 0; j < A.columns - 1; j++)
-                s << A.M[i*A.columns + j] << ", ";
+                s << A[i][j] << ", ";
 
-            s << A.M[(i+1)*A.columns - 1] << "]" << std::endl;
+            s << A[i][A.columns - 1] << "]" << std::endl;
         }
-    }
 
-    s << "]";
+        s << "]";
+    }
 
     return s;
 }

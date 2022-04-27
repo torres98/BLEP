@@ -15,8 +15,17 @@ class Matrix {
 
         Matrix(unsigned int rows, unsigned int columns) {
             M = new Element[rows * columns];
+
+        //Constructor from static 2D array
+        template <unsigned int rows, unsigned int columns>
+        Matrix(const Element (&A)[rows][columns]) {
+
             this -> rows = rows;
             this -> columns = columns;
+            M = new Element[rows * columns];
+
+            memcpy(this -> M, A, rows * columns * sizeof(Element));
+
         }
 
         // Copy constructor

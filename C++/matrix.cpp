@@ -27,8 +27,8 @@ class Matrix {
 
         }
 
-        // Slicing constructor
-        Matrix(const Matrix& A, unsigned int row_i, unsigned int row_f, unsigned int column_i, unsigned int column_f) {
+        // Slice constructor
+        Matrix(const Matrix& A, unsigned int row_i, unsigned int row_f, unsigned int col_i, unsigned int col_f) {
             /*std::cout << "Slicing " << this -> rows << "x" << this -> columns << "   " << A.rows << "x" << A.columns << "\n";
             std::cout << this << " " << &A << std::endl;*/
 
@@ -36,17 +36,17 @@ class Matrix {
                 std::stringstream error_log;
                 error_log << "Row indices [" << row_i << ":" << row_f << "] out of bounds for matrix of size " << A.rows << "x" << A.columns;
                 throw std::invalid_argument(error_log.str());
-            } else if (column_i >= A.columns || column_f > A.columns) {
+            } else if (col_i >= A.columns || col_f > A.columns) {
                 std::ostringstream error_log;
-                error_log << "Column indices [" << column_i << ":" << column_f << "] out of bounds for matrix of size " << A.rows << "x" << A.columns;
+                error_log << "Column indices [" << col_i << ":" << col_f << "] out of bounds for matrix of size " << A.rows << "x" << A.columns;
                 throw std::invalid_argument(error_log.str());
             }
 
             rows = row_f - row_i;
-            columns = column_f - column_i;
+            columns = col_f - col_i;
             M = new Element[rows * columns];
 
-            memcpy(this -> M, &A.M[row_i * A.columns], rows * columns * sizeof(Element));
+            memcpy(this -> M, A[row_i], rows * columns * sizeof(Element));
 
         }
 

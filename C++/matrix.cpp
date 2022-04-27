@@ -168,9 +168,25 @@ template <typename Element>
 class Vector: public Matrix<Element> {
 
     public:
-        Vector(unsigned int elements) : Matrix<Element>(elements, 1) {}
+        Vector(unsigned int elements) : Matrix<Element>(elements, elements > 0 ? 1: 0) {}
 
-    Element& operator[](unsigned int i) {
+    Element operator[] (unsigned int i) const {
+        if (i >= this -> rows) {
+            std::ostringstream error_log;
+            error_log << "Out of bound index " << i << " for vector of size " << this -> rows;
+            throw std::invalid_argument(error_log.str());
+        }
+
+        return this -> M[i];
+    }
+
+    Element& operator[] (unsigned int i) {
+        if (i >= this -> rows) {
+            std::ostringstream error_log;
+            error_log << "Out of bound index (" << i << ") for vector of size " << this -> rows;
+            throw std::invalid_argument(error_log.str());
+        }
+
         return this -> M[i];
     }
 

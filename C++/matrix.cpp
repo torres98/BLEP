@@ -7,8 +7,10 @@
 
 template <typename Element>
 class Matrix {
-    public:
+    protected:
         Element* M;
+
+    public:
         unsigned int rows, columns;
 
         Matrix(unsigned int rows, unsigned int columns) {

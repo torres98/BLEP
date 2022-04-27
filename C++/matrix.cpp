@@ -192,4 +192,22 @@ class Vector: public Matrix<Element> {
 
 };
 
+template <typename Element>
+std::ostream& operator<<(std::ostream &s, const Vector<Element> &v) {
+
+    s << "[";
+
+    if (v.rows > 0) {
+        for (unsigned int i = 0; i < v.rows - 1; i++)
+            s << v[i] << ", ";
+
+        s << v[v.rows - 1];
+    }
+
+    s << "]" << std::endl;
+
+    return s;
+
+}
+
 #endif

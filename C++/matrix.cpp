@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <sstream>
+#include <cstring>
 
 template <typename Element>
 class Matrix {

@@ -23,9 +23,7 @@ class Matrix {
             columns = A.columns;
             M = new Element[rows * columns];
 
-            for (unsigned int i = 0; i < rows; i++)
-                for (unsigned int j = 0; j < columns; j++)
-                    (*this)[i][j] = A[i][j];
+            memcpy(this -> M, A.M, rows * columns * sizeof(Element));
 
         }
 

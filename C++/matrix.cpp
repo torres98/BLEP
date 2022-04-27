@@ -136,17 +136,7 @@ std::ostream& operator<<(std::ostream &s, const Matrix<Element> &A) {
 
     if (A.rows == 0 || A.columns == 0) {
         s << "[]";
-    } else if (A.columns == 1) {
-        s << "[";
-
-        for (unsigned int i = 0; i < A.rows - 1; i++)
-            s << A.M[i] << ", ";
-
-        s << A.M[A.rows - 1] << "]";;
-
     } else {
-
-        s << "[" << std::endl;
 
         for (unsigned int i = 0; i < A.rows; i++) {
             s << "[";
@@ -157,7 +147,6 @@ std::ostream& operator<<(std::ostream &s, const Matrix<Element> &A) {
             s << A[i][A.columns - 1] << "]" << std::endl;
         }
 
-        s << "]";
     }
 
     return s;

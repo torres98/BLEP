@@ -98,7 +98,7 @@ class Matrix {
             return M + i*columns;
         }
 
-        Matrix operator*(Matrix &A) {
+        Matrix operator*(const Matrix &A) {
             
             if (columns != A.rows) {
                 std::ostringstream error_log;

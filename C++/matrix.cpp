@@ -115,6 +115,13 @@ class Matrix {
 
         }
 
+        bool operator==(const Matrix &A) {
+            if (rows != A.rows || columns != A.columns)
+                return false;
+
+            return memcmp(this -> M, A.M, rows * columns * sizeof(Element)) == 0;
+        }
+
         ~Matrix() {
             /*std::cout << "DELETE " << rows << "x" << columns << "\n";
             std::cout << "OBJ POINTER: " << this << std::endl;

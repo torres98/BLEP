@@ -13,15 +13,17 @@ class Matrix {
     public:
         unsigned int rows, columns;
 
-        Matrix(unsigned int rows, unsigned int columns) {
+        Matrix(unsigned int rows, unsigned int columns, bool init = false) {
 
             this -> rows = rows;
             this -> columns = columns;
             M = new Element[rows * columns];
 
-            for (unsigned int i = 0; i < rows; i++)
-                for (unsigned int j = 0; j < columns; j++)
-                    (*this)[i][j] = Element();
+            if (init) {
+                for (unsigned int i = 0; i < rows; i++)
+                    for (unsigned int j = 0; j < columns; j++)
+                        (*this)[i][j] = Element();
+            }
         }
 
         //Constructor from static 2D array

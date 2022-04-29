@@ -36,17 +36,22 @@ class Rainbow {
         
         static Matrix<gf> extract_public_key(const char *pk_path) {
             Matrix<gf> PK = Matrix<gf>(n_polynomials, N + n_polynomials);
+            FILE *pk_file = fopen(pk_path, "r");
+    
+            //consume the header of the pk file
+            while (fgetc(pk_file) != '=');
+            fgetc(pk_file);
 
-            string pk_str = read(pk_path);
-            unsigned int offset = pk_str.find("=") + 2;
+            char element_hex[element_hex_size + 1];
 
             for (unsigned int i=0; i < N; i++) {
                 for (unsigned int j=0; j < n_polynomials; j++) {
-                    // maybe change the way you slice the string, by using a self-made function
-                    PK[j][i] = gf(stoi(pk_str.substr(offset, element_hex_size), 0, 16));
-                    offset += element_hex_size;
+                    fgets(element_hex, element_hex_size + 1, pk_file);
+                    PK[j][i] = gf(strtol(element_hex, NULL, 16)); 
                 }
             }
+
+            fclose(pk_file);
 
             // concatenate the identity matrix in the right part
             for (unsigned int i=0; i < n_polynomials; i++) {
@@ -72,15 +77,18 @@ class Rainbow {
 
             // PARSE SIGNATURE
 
-            // signature vector
             Vector<gf> v = Vector<gf>(N + n_polynomials);
+            FILE *signature_file = fopen(signature_path, "r");
+   
+            while (fgetc(signature_file) != '=');
+            fgetc(signature_file);
 
-            // PARSE SIGNATURE
-            string signature_str = read(signature_path);
-            unsigned int z_offset = signature_str.find("=") + 2, salt_offset = z_offset + n_variables * element_hex_size;
+            char element_hex[3];
 
-            for (unsigned int i = 0; i < n_variables; i++)
-                v[i] = gf(stoi(signature_str.substr(z_offset + element_hex_size*i, element_hex_size), 0, 16));
+            for (unsigned int i = 0; i < n_variables; i++) {
+                fgets(element_hex, element_hex_size + 1, signature_file);
+                v[i] = gf(strtol(element_hex, NULL, 16));
+            }
 
             if (element_hex_size == 1) {
                 gf tmp;
@@ -109,8 +117,12 @@ class Rainbow {
             hash_file(message_path, digest);
 
             // copy the salt at the end of the array (digest = H(m) || salt)
-            for (unsigned int i = 0; i < 16; i++)
-                digest[DIGEST_SIZE + i] = stoi(signature_str.substr(salt_offset + 2*i, 2), 0, 16);
+            for (unsigned int i = 0; i < 16; i++) {
+                fgets(element_hex, 3, signature_file);
+                digest[DIGEST_SIZE + i] = strtol(element_hex, NULL, 16);
+            }
+
+            fclose(signature_file);
 
             // digest = H( H(m) || salt )
             hash_str(digest, digest, DIGEST_SIZE + 16);

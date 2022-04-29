@@ -17,6 +17,12 @@ bool progVer(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
 template <typename Element>
 bool progVerRand(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
 
+    if (t > M.rows) {
+        std::stringstream error_log;
+        error_log << "Number of steps t (" << t << ") can't be bigger than the number of rows of M (" << M.rows << ")";
+        throw std::invalid_argument(error_log.str());
+    }
+
     if (t == 0)
         return false;
 

@@ -51,8 +51,6 @@ class Matrix {
 
         // Slice constructor
         Matrix(const Matrix& A, unsigned int row_i, unsigned int row_f, unsigned int col_i, unsigned int col_f) {
-            /*std::cout << "Slicing " << this -> rows << "x" << this -> columns << "   " << A.rows << "x" << A.columns << "\n";
-            std::cout << this << " " << &A << std::endl;*/
 
             if (row_i >= A.rows || row_f > A.rows) {
                 std::stringstream error_log;
@@ -68,7 +66,12 @@ class Matrix {
             columns = col_f - col_i;
             M = new Element[rows * columns];
 
-            memcpy(this -> M, A[row_i], rows * columns * sizeof(Element));
+            if (columns == A.columns)
+                memcpy(this -> M, A[row_i], rows * columns * sizeof(Element));
+            else
+                for (unsigned int i = row_i; i < row_f; i++)
+                    memcpy((*this)[i-row_i], &(A[i][col_i]), columns * sizeof(Element));
+            }
 
         }
 

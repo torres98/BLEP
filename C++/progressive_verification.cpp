@@ -33,12 +33,12 @@ bool progVerRand(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
     
     shuffle_array(row_indices, M.rows);
 
-    Matrix<Element> M_row = Matrix<Element>(1, M.columns);
+    Vector<Element> M_row = Vector<Element>(M.columns);
     
     for (unsigned int i = 0; i < t; i++) {
-        M_row = Matrix<Element>(M, row_indices[i], row_indices[i]+1, 0, M.columns);
+        M_row = Vector<Element>(M, row_indices[i]);
         
-        if (!verify_signature(M_row, v))
+        if (M_row * v)
             return false;
     }
 

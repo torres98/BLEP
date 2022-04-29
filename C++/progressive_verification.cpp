@@ -26,7 +26,7 @@ bool progVerRand(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
     if (t == 0)
         return false;
 
-    unsigned int row_indices[M.rows];
+    unsigned int *row_indices = new unsigned int[M.rows]; //tip: maybe make it different?
 
     for (unsigned int i = 0; i < M.rows; i++)
         row_indices[i] = i;
@@ -41,6 +41,8 @@ bool progVerRand(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
         if (M_row * v)
             return false;
     }
+
+    delete[] row_indices;
 
     return true;
 }

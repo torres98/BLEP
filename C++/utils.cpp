@@ -19,7 +19,7 @@
 // FILE UTILS //
 /**************/
 
-string read(string file_path) {
+string read(const char *file_path) {
     
     std::ifstream file(file_path);
     std::stringstream file_content;
@@ -74,7 +74,7 @@ void sha256_string(unsigned char *message, unsigned char *output_buffer, unsigne
     SHA256_Final(output_buffer, &sha256);
 }
 
-int sha256_file(char *file_path, unsigned char *output_buffer) {
+int sha256_file(const char *file_path, unsigned char *output_buffer) {
     FILE *file = fopen(file_path, "rb");
     if(!file) return -534;
 
@@ -105,7 +105,7 @@ void sha384_string(unsigned char *message, unsigned char *output_buffer, unsigne
     SHA384_Final(output_buffer, &sha384);
 }
 
-int sha384_file(char *file_path, unsigned char *output_buffer) {
+int sha384_file(const char *file_path, unsigned char *output_buffer) {
     FILE *file = fopen(file_path, "rb");
     if(!file) return -534;
 
@@ -136,7 +136,7 @@ void sha512_string(unsigned char *message, unsigned char *output_buffer, unsigne
     SHA512_Final(output_buffer, &sha512);
 }
 
-int sha512_file(char *file_path, unsigned char *output_buffer) {
+int sha512_file(const char *file_path, unsigned char *output_buffer) {
     FILE *file = fopen(file_path, "rb");
     if(!file) return -534;
 

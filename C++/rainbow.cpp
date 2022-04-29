@@ -10,21 +10,21 @@
     static const unsigned short v1 = 36, o1 = 32, o2 = 32, n = 16, DIGEST_SIZE = 32;
 
     constexpr static void (*hash_str)(unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha256_string;
-    constexpr static int (*hash_file)(char* file_path, unsigned char* output_buffer) = sha256_file;
+    constexpr static int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha256_file;
 
     typedef gf16 gf;
 #elif VERSION == 2
     static const unsigned short v1 = 68, o1 = 32, o2 = 48, n = 256, DIGEST_SIZE = 48;
 
     constexpr static void (*hash_str)(unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha384_string;
-    constexpr static int (*hash_file)(char* file_path, unsigned char* output_buffer) = sha384_file;
+    constexpr static int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha384_file;
 
     typedef gf256 gf;
 #elif VERSION == 3
     static const unsigned short v1 = 96, o1 = 36, o2 = 64, n = 256, DIGEST_SIZE = 64;
 
     constexpr static void (*hash_str)(unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha512_string;
-    constexpr static int (*hash_file)(char* file_path, unsigned char* output_buffer) = sha512_file;
+    constexpr static int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha512_file;
 
     typedef gf256 gf;
 #endif
@@ -34,7 +34,7 @@ static const unsigned int n_variables = v1+o1+o2, n_polynomials = n_variables - 
 class Rainbow {
     private:
         
-        static Matrix<gf> extract_public_key(string pk_path) {
+        static Matrix<gf> extract_public_key(const char *pk_path) {
             Matrix<gf> PK = Matrix<gf>(n_polynomials, N + n_polynomials);
 
             string pk_str = read(pk_path);
@@ -64,11 +64,13 @@ class Rainbow {
 
         Rainbow() {}
 
-        Rainbow(const string &pk_path) {
+        Rainbow(const char *pk_path) {
             M = extract_public_key(pk_path);
         }
 
-        static Vector<gf> get_signature_vector(const string &signature_path, string message_path) {
+        static Vector<gf> get_signature_vector(const char* signature_path, const char* message_path) {
+
+            // PARSE SIGNATURE
 
             // signature vector
             Vector<gf> v = Vector<gf>(N + n_polynomials);
@@ -104,7 +106,7 @@ class Rainbow {
             unsigned char digest[n_polynomials * elements_per_byte];
 
             // digest = H(m)
-            hash_file(&message_path[0], digest);
+            hash_file(message_path, digest);
 
             // copy the salt at the end of the array (digest = H(m) || salt)
             for (unsigned int i = 0; i < 16; i++)
@@ -176,9 +178,9 @@ class RainbowV: public Rainbow {
         using Rainbow::Rainbow;
 };*/
 
-string pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk.txt";
-string signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature.txt";
-string message_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb";
+char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk.txt";
+char const *signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature.txt";
+char const *message_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb";
 
 int main(int argc, char *argv[]) {
     Rainbow R;

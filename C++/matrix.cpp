@@ -181,7 +181,9 @@ template <typename Element>
 class Vector: public Matrix<Element> {
 
     public:
-        Vector(unsigned int elements) : Matrix<Element>(elements, elements > 0 ? 1: 0) {}
+        Vector(unsigned int size, bool row_vector = false, bool init = false) :
+            Matrix<Element>(row_vector ? 1: size, row_vector ? size: 1, init) {}
+
 
     Element operator[] (unsigned int i) const {
         if (i >= this -> rows) {

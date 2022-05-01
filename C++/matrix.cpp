@@ -184,6 +184,16 @@ class Vector: public Matrix<Element> {
         Vector(unsigned int size, bool row_vector = false, bool init = false) :
             Matrix<Element>(row_vector ? 1: size, row_vector ? size: 1, init) {}
 
+        //Constructor from matrix row
+        Vector(const Matrix<Element> &A, unsigned int row) : Matrix<Element>(1, A.columns) {
+            if (row >= A.rows) {
+                std::stringstream error_log;
+                error_log << "Row index " << row << " out of bounds for matrix of size " << A.rows << "x" << A.columns << ".";
+                throw std::invalid_argument(error_log.str());
+            }
+
+            memcpy(this -> M, A[row], A.columns * sizeof(Element));
+        }
 
     Element operator[] (unsigned int i) const {
         if (i >= this -> rows) {

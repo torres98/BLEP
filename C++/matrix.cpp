@@ -17,13 +17,12 @@ class Matrix {
 
             this -> rows = rows;
             this -> columns = columns;
-            M = new Element[rows * columns];
 
-            if (init) {
-                for (unsigned int i = 0; i < rows; i++)
-                    for (unsigned int j = 0; j < columns; j++)
-                        (*this)[i][j] = Element();
-            }
+            if (init)
+                M = new Element[rows * columns]();
+            else
+                M = new Element[rows * columns];
+
         }
 
         //Constructor from static 2D array

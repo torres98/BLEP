@@ -110,7 +110,7 @@ class Matrix {
                 throw std::invalid_argument(error_log.str());
             }
 
-            Matrix O = Matrix(rows, A.columns);
+            Matrix O = Matrix(rows, A.columns, true);
             
             for (unsigned int i = 0; i < rows; i++)
                 for (unsigned int j = 0; j < A.columns; j++)

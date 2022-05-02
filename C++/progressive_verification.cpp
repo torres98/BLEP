@@ -50,8 +50,8 @@ bool progVerRand(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
     
     for (unsigned int i = 0; i < t; i++) {
         M_row = Vector<Element>(M, row_indices[i]);
-        
-        if (M_row * v)
+
+        if (!verify_signature(M_row, v))
             return false;
     }
 

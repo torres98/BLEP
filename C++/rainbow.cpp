@@ -35,7 +35,7 @@ class Rainbow {
     private:
         
         static Matrix<gf> extract_public_key(const char *pk_path) {
-            Matrix<gf> PK = Matrix<gf>(n_polynomials, N + n_polynomials);
+            Matrix<gf> PK = Matrix<gf>(n_polynomials, N + n_polynomials, true);
             FILE *pk_file = fopen(pk_path, "r");
     
             //consume the header of the pk file
@@ -54,12 +54,8 @@ class Rainbow {
             fclose(pk_file);
 
             // concatenate the identity matrix in the right part
-            for (unsigned int i=0; i < n_polynomials; i++) {
-                for (unsigned int j=N; j < N + n_polynomials; j++)
-                    PK[i][j] = gf(0);
-
+            for (unsigned int i=0; i < n_polynomials; i++)
                 PK[i][N + i] = gf(1);
-            }
 
             return PK;
         }

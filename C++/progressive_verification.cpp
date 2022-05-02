@@ -3,16 +3,28 @@
 #include "utils.cpp"
 #include "standard_verification.cpp"
 
-// make it step by step bro
 template <typename Element>
 bool progVer(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
 
+    if (t > M.nrows()) {
+        std::stringstream error_log;
+        error_log << "Number of steps t (" << t << ") can't be bigger than the number of rows of M (" << M.nrows() << ")";
+        throw std::invalid_argument(error_log.str());
+    }
+
     if (t == 0)
         return false;
-    
-    Matrix<Element> M_reduced = Matrix<Element>(M, 0, t, 0, M.columns);;
 
-    return (M_reduced * v).is_zero();
+    Vector<Element> M_row = Vector<Element>(M.ncolumns());
+    
+    for (unsigned int i = 0; i < t; i++) {
+        M_row = Vector<Element>(M, i);
+
+        if (!verify_signature(M_row, v))
+            return false;
+    }
+
+    return true;
 }
 
 template <typename Element>

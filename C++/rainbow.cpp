@@ -215,7 +215,7 @@ int main(int argc, char *argv[]) {
 
     Vector<gf> v = Rainbow::get_signature_vector(signature_path, message_path);
 
-    cout << "VERIFICATION: " << verify_signature(R.M, v) << endl;
+    std::cout << "VERIFICATION: " << verify_signature(R.M, v) << std::endl;
 
     Vector<gf> v_guessed = Vector<gf>(v.nrows());
     gf beta = gf(n / 2);
@@ -242,16 +242,16 @@ int main(int argc, char *argv[]) {
             efficient_progressive_error_count++;
     }
 
-    cout << "EFFICIENT VERIFICATION STATS" << endl;
-    cout << "Error percentage: " << (double) efficient_error_count / SAMPLE_SIZE * 100 << "%" << endl;
-    cout << "Security bits: " << ((efficient_error_count == 0) ? 0: log2((double) efficient_error_count / SAMPLE_SIZE)) << endl << endl;
+    std::cout << "EFFICIENT VERIFICATION STATS" << std::endl;
+    std::cout << "Error percentage: " << (double) efficient_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;
+    std::cout << "Security bits: " << ((efficient_error_count == 0) ? 0: log2((double) efficient_error_count / SAMPLE_SIZE)) << std::endl << std::endl;
 
-    cout << "PROGRESSIVE VERIFICATION STATS" << endl;
-    cout << "Error percentage: " << (double) progressive_error_count / SAMPLE_SIZE * 100 << "%" << endl;
-    cout << "Security bits: " << ((progressive_error_count == 0) ? 0: log2((double) progressive_error_count / SAMPLE_SIZE)) << endl << endl;
+    std::cout << "PROGRESSIVE VERIFICATION STATS" << std::endl;
+    std::cout << "Error percentage: " << (double) progressive_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;
+    std::cout << "Security bits: " << ((progressive_error_count == 0) ? 0: log2((double) progressive_error_count / SAMPLE_SIZE)) << std::endl << std::endl;
 
-    cout << "EFFICIENT+PROGRESSIVE VERIFICATION STATS" << endl;
-    cout << "Error percentage: " << (double) efficient_progressive_error_count / SAMPLE_SIZE * 100 << "%" << endl;
-    cout << "Security bits: " << ((efficient_progressive_error_count == 0) ? 0: log2((double) efficient_progressive_error_count / SAMPLE_SIZE)) << endl << endl;
+    std::cout << "EFFICIENT+PROGRESSIVE VERIFICATION STATS" << std::endl;
+    std::cout << "Error percentage: " << (double) efficient_progressive_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;
+    std::cout << "Security bits: " << ((efficient_progressive_error_count == 0) ? 0: log2((double) efficient_progressive_error_count / SAMPLE_SIZE)) << std::endl << std::endl;
 
 }

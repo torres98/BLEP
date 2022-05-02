@@ -19,13 +19,13 @@
 // FILE UTILS //
 /**************/
 
-string read(const char *file_path) {
+std::string read(const char *file_path) {
     
     std::ifstream file(file_path);
     std::stringstream file_content;
 
     if (file.fail()) {
-        cout << "Error during read of " << file_path << endl;
+        std::cout << "Error during read of " << file_path << std::endl;
         exit(-1);
     }
 

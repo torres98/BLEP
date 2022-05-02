@@ -9,10 +9,10 @@ template <typename Element>
 class Matrix {
     protected:
         Element* M;
-
-    public:
         unsigned int rows, columns;
 
+    public:
+        
         Matrix(unsigned int rows, unsigned int columns, bool init = false) {
 
             this -> rows = rows;
@@ -181,14 +181,14 @@ class Vector: public Matrix<Element> {
             Matrix<Element>(row_vector ? 1: size, row_vector ? size: 1, init) {}
 
         //Constructor from matrix row
-        Vector(const Matrix<Element> &A, unsigned int row) : Matrix<Element>(1, A.columns) {
-            if (row >= A.rows) {
+        Vector(const Matrix<Element> &A, unsigned int row) : Matrix<Element>(1, A.ncolumns()) {
+            if (row >= A.nrows()) {
                 std::stringstream error_log;
-                error_log << "Row index " << row << " out of bounds for matrix of size " << A.rows << "x" << A.columns << ".";
+                error_log << "Row index " << row << " out of bounds for matrix of size " << A.nrows() << "x" << A.ncolumns() << ".";
                 throw std::invalid_argument(error_log.str());
             }
 
-            memcpy(this -> M, A[row], A.columns * sizeof(Element));
+            memcpy(this -> M, A[row], A.ncolumns() * sizeof(Element));
         }
 
     Element operator[] (unsigned int i) const {

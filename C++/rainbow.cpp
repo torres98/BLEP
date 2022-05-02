@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
 
     cout << "VERIFICATION: " << verify_signature(R.M, v) << endl;
 
-    Vector<gf> v_guessed = Vector<gf>(v.rows);
+    Vector<gf> v_guessed = Vector<gf>(v.nrows());
     gf beta = gf(n / 2);
 
     // for efficient verification

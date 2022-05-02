@@ -51,8 +51,8 @@ void fill_matrix_randomly(Matrix<Element> &M, uint8_t min = 0, uint8_t max = 255
 
     std::uniform_int_distribution<uint8_t> element_dist(min, max);
     
-    for (unsigned int i = 0; i < M.rows; i++)
-        for (unsigned int j = 0; j < M.columns; j++)
+    for (unsigned int i = 0; i < M.nrows(); i++)
+        for (unsigned int j = 0; j < M.ncolumns(); j++)
             M[i][j] = Element(element_dist(rng));
 
 }

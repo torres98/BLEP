@@ -17,23 +17,23 @@ bool progVer(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
 template <typename Element>
 bool progVerRand(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
 
-    if (t > M.rows) {
+    if (t > M.nrows()) {
         std::stringstream error_log;
-        error_log << "Number of steps t (" << t << ") can't be bigger than the number of rows of M (" << M.rows << ")";
+        error_log << "Number of steps t (" << t << ") can't be bigger than the number of rows of M (" << M.nrows() << ")";
         throw std::invalid_argument(error_log.str());
     }
 
     if (t == 0)
         return false;
 
-    unsigned int *row_indices = new unsigned int[M.rows]; //tip: maybe make it different?
+    unsigned int *row_indices = new unsigned int[M.nrows()]; //tip: maybe make it different?
 
-    for (unsigned int i = 0; i < M.rows; i++)
+    for (unsigned int i = 0; i < M.nrows(); i++)
         row_indices[i] = i;
     
-    shuffle_array(row_indices, M.rows);
+    shuffle_array(row_indices, M.nrows());
 
-    Vector<Element> M_row = Vector<Element>(M.columns);
+    Vector<Element> M_row = Vector<Element>(M.ncolumns());
     
     for (unsigned int i = 0; i < t; i++) {
         M_row = Vector<Element>(M, row_indices[i]);

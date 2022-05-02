@@ -3,7 +3,7 @@
 template <typename Element>
 Matrix<Element> offVer(Matrix<Element> &M, unsigned int k) {
 
-    Matrix<Element> C = Matrix<Element>(k, M.rows); 
+    Matrix<Element> C = Matrix<Element>(k, M.nrows()); 
     fill_matrix_randomly(C); 
 
     /*while not np.linalg.matrix_rank(C) == k:
@@ -16,7 +16,7 @@ template <typename Element>
 Element norm(Matrix<Element> &v) {
     Element max;
 
-    for (unsigned int i = 0; i < v.rows; i++)
+    for (unsigned int i = 0; i < v.nrows(); i++)
         if (v[i][0] > max)
             max = v[i][0];
     
@@ -25,9 +25,9 @@ Element norm(Matrix<Element> &v) {
 }
 
 template <typename Element>
-bool norm_check(Matrix<Element> &v, Element &beta) {
-    for (unsigned int i = 0; i < v.rows; i++)
-        if (v[i][0] > beta)
+bool norm_check(Vector<Element> &v, Element &beta) {
+    for (unsigned int i = 0; i < v.nrows(); i++)
+        if (v[i] > beta)
             return false;
     
     return true;

@@ -81,16 +81,12 @@ class Matrix {
             this -> columns = 0;
         }
 
-        static void get_row(Matrix<Element> &dest, Matrix<Element> &src, unsigned int row_index) {
-            dest.M = src.M + row_index * src.columns;
+        unsigned int nrows() const {
+            return rows;
         }
 
-        bool is_zero() {
-            for (unsigned int i = 0; i < rows; i++)
-                for (unsigned int j = 0; j < columns; j++)
-                    if ((*this)[i][j]) return false;
-
-            return true;
+        unsigned int ncolumns() const {
+            return columns;
         }
 
         //Seems like i won't be needing it

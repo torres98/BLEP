@@ -2,6 +2,8 @@
 #include "gf256.cpp"
 #include "efficient_verification.cpp"
 #include "progressive_verification.cpp"
+#include "matrix.cpp"
+#include "vector.cpp"
 
 #define VERSION 1
 #define SAMPLE_SIZE 10000

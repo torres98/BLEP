@@ -1,4 +1,5 @@
 #include "matrix.cpp"
+#include "vector.cpp"
 #include "utils.cpp"
 #include "standard_verification.cpp"
 

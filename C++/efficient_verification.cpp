@@ -1,4 +1,5 @@
 #include "matrix.cpp"
+#include "vector.cpp"
 
 template <typename Element>
 Matrix<Element> offVer(Matrix<Element> &M, unsigned int k) {

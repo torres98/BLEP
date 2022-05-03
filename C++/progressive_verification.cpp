@@ -21,12 +21,15 @@ bool progVer(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
     if (t == 0)
         return false;
 
-    Vector<Element> M_row = Vector<Element>(M.ncolumns());
+    Element cell;
     
     for (unsigned int i = 0; i < t; i++) {
-        M_row = Vector<Element>(M, i);
+        cell = Element();
 
-        if (!verify_signature(M_row, v))
+        for (unsigned int j = 0; j < v.nrows(); j++)
+                cell += M[i][j] * v[j];
+
+        if (cell)
             return false;
     }
 
@@ -58,12 +61,15 @@ bool progVerRand(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
     
     shuffle_array(row_indices, M.nrows());
 
-    Vector<Element> M_row = Vector<Element>(M.ncolumns());
-    
-    for (unsigned int i = 0; i < t; i++) {
-        M_row = Vector<Element>(M, row_indices[i]);
+    Element cell;
 
-        if (!verify_signature(M_row, v))
+    for (unsigned int i = 0; i < t; i++) {
+        cell = Element();
+
+        for (unsigned int j = 0; j < v.nrows(); j++)
+                cell += M[row_indices[i]][j] * v[j];
+
+        if (cell)
             return false;
     }
 

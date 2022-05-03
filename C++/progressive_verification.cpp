@@ -6,6 +6,12 @@
 template <typename Element>
 bool progVer(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
 
+    if (M.ncolumns() != v.nrows()) {
+        std::ostringstream error_log;
+        error_log << "Incompatible sizes for progressive signature verification (matrix of size " << M.nrows() << "x" << M.ncolumns() << " and vector of size " << (v.nrows() == 1 ? v.ncolumns(): v.nrows()) << ")";
+        throw std::invalid_argument(error_log.str());
+    }
+
     if (t > M.nrows()) {
         std::stringstream error_log;
         error_log << "Number of steps t (" << t << ") can't be bigger than the number of rows of M (" << M.nrows() << ")";
@@ -29,6 +35,12 @@ bool progVer(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
 
 template <typename Element>
 bool progVerRand(Matrix<Element> &M, Vector<Element> &v, unsigned int t) {
+
+    if (M.ncolumns() != v.nrows()) {
+        std::ostringstream error_log;
+        error_log << "Incompatible sizes for progressive signature verification (matrix of size " << M.nrows() << "x" << M.ncolumns() << " and vector of size " << (v.nrows() == 1 ? v.ncolumns(): v.nrows()) << ")";
+        throw std::invalid_argument(error_log.str());
+    }
 
     if (t > M.nrows()) {
         std::stringstream error_log;

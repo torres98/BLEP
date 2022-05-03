@@ -11,9 +11,7 @@
 #include "matrix.cpp"
 #include "openssl/sha.h"
 
-#define string std::string
-#define endl std::endl
-#define cout std::cout
+#define SHA_BLOCK_SIZE 32768u
 
 /**************/
 // FILE UTILS //
@@ -34,6 +32,14 @@ std::string read(const char *file_path) {
     file.close();
     
     return file_content.str();
+}
+
+unsigned int get_file_size(FILE* f) {
+    fseek(f, 0, SEEK_END);
+    unsigned int file_size = ftell(f);
+    rewind(f);
+
+    return file_size;
 }
 
 /****************/
@@ -76,24 +82,30 @@ void sha256_string(unsigned char *message, unsigned char *output_buffer, unsigne
 
 int sha256_file(const char *file_path, unsigned char *output_buffer) {
     FILE *file = fopen(file_path, "rb");
-    if(!file) return -534;
+
+    if(file == NULL)
+        return -534;
+
+    unsigned int file_size = get_file_size(file);
 
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
-    const int bufSize = 32768;
-    unsigned char *buffer = (unsigned char *) malloc(bufSize);
-    int bytesRead = 0;
 
-    if(!buffer) return ENOMEM;
+    unsigned char *input_buffer = (unsigned char *) malloc(file_size < SHA_BLOCK_SIZE ? file_size: SHA_BLOCK_SIZE);
 
-    while((bytesRead = fread(buffer, 1, bufSize, file))) {
-        SHA256_Update(&sha256, buffer, bytesRead);
-    }
+    if(input_buffer == NULL)
+        return ENOMEM;
+
+    unsigned int bytes_read;
+
+    while((bytes_read = fread(input_buffer, 1, SHA_BLOCK_SIZE, file)))
+        SHA256_Update(&sha256, input_buffer, bytes_read);
 
     SHA256_Final(output_buffer, &sha256);
 
     fclose(file);
-    free(buffer);
+    free(input_buffer);
+
     return 0;
 }
 
@@ -107,24 +119,30 @@ void sha384_string(unsigned char *message, unsigned char *output_buffer, unsigne
 
 int sha384_file(const char *file_path, unsigned char *output_buffer) {
     FILE *file = fopen(file_path, "rb");
-    if(!file) return -534;
+
+    if(file == NULL)
+        return -534;
+
+    unsigned int file_size = get_file_size(file);
 
     SHA512_CTX sha384;
     SHA384_Init(&sha384);
-    const int bufSize = 32768;
-    unsigned char *buffer = (unsigned char *) malloc(bufSize);
-    int bytesRead = 0;
+    
+    unsigned char *input_buffer = (unsigned char *) malloc(file_size < SHA_BLOCK_SIZE ? file_size: SHA_BLOCK_SIZE);
 
-    if(!buffer) return ENOMEM;
+    if(input_buffer == NULL)
+        return ENOMEM;
 
-    while((bytesRead = fread(buffer, 1, bufSize, file))) {
-        SHA384_Update(&sha384, buffer, bytesRead);
-    }
+    unsigned int bytes_read;
+
+    while((bytes_read = fread(input_buffer, 1, SHA_BLOCK_SIZE, file)))
+        SHA384_Update(&sha384, input_buffer, bytes_read);
 
     SHA384_Final(output_buffer, &sha384);
 
     fclose(file);
-    free(buffer);
+    free(input_buffer);
+
     return 0;
 }
 
@@ -138,24 +156,30 @@ void sha512_string(unsigned char *message, unsigned char *output_buffer, unsigne
 
 int sha512_file(const char *file_path, unsigned char *output_buffer) {
     FILE *file = fopen(file_path, "rb");
-    if(!file) return -534;
+
+    if(file == NULL)
+        return -534;
+
+    unsigned int file_size = get_file_size(file);
 
     SHA512_CTX sha512;
     SHA512_Init(&sha512);
-    const int bufSize = 32768;
-    unsigned char *buffer = (unsigned char *) malloc(bufSize);
-    int bytesRead = 0;
+    
+    unsigned char *input_buffer = (unsigned char *) malloc(file_size < SHA_BLOCK_SIZE ? file_size: SHA_BLOCK_SIZE);
 
-    if(!buffer) return ENOMEM;
+    if(input_buffer == NULL)
+        return ENOMEM;
 
-    while((bytesRead = fread(buffer, 1, bufSize, file))) {
-        SHA512_Update(&sha512, buffer, bytesRead);
-    }
+    unsigned int bytes_read;
 
-    SHA384_Final(output_buffer, &sha512);
+    while((bytes_read = fread(input_buffer, 1, SHA_BLOCK_SIZE, file)))
+        SHA384_Update(&sha512, input_buffer, bytes_read);
+
+    SHA512_Final(output_buffer, &sha512);
 
     fclose(file);
-    free(buffer);
+    free(input_buffer);
+
     return 0;
 }
 

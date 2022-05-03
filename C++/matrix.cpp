@@ -70,7 +70,6 @@ class Matrix {
             else
                 for (unsigned int i = row_i; i < row_f; i++)
                     memcpy((*this)[i-row_i], &(A[i][col_i]), columns * sizeof(Element));
-            }
 
         }
 
@@ -117,12 +116,9 @@ class Matrix {
         }
 
         Matrix& operator=(const Matrix &A) {
-            //std::cout << "Assignment " << rows << "x" << columns << "   " << A.rows << " " << A.columns << "\n";
-            //std::cout << this << " " << A.M << std::endl;
 
             if (rows != A.rows || columns != A.columns) {
-                //std::cout << "Deleting M now\n";
-                delete[] M; // the object is still in scope, so the destructor won't be called
+                delete[] M;
 
                 rows = A.rows;
                 columns = A.columns;
@@ -143,9 +139,6 @@ class Matrix {
         }
 
         ~Matrix() {
-            /*std::cout << "DELETE " << rows << "x" << columns << "\n";
-            std::cout << "OBJ POINTER: " << this << std::endl;
-            std::cout << "M POINTER: " << this -> M << std::endl << std::endl;*/
             delete[] M;
         }
 

@@ -9,21 +9,21 @@
 #define SAMPLE_SIZE 10000
 
 #if VERSION == 1
-    static const unsigned short v1 = 36, o1 = 32, o2 = 32, n = 16, DIGEST_SIZE = 32;
+    static const unsigned short v1 = 36, o1 = 32, o2 = 32, element_hex_size = 1, DIGEST_SIZE = 32;
 
     constexpr static void (*hash_str)(unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha256_string;
     constexpr static int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha256_file;
 
     typedef gf16 gf;
 #elif VERSION == 2
-    static const unsigned short v1 = 68, o1 = 32, o2 = 48, n = 256, DIGEST_SIZE = 48;
+    static const unsigned short v1 = 68, o1 = 32, o2 = 48, element_hex_size = 2, DIGEST_SIZE = 48;
 
     constexpr static void (*hash_str)(unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha384_string;
     constexpr static int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha384_file;
 
     typedef gf256 gf;
 #elif VERSION == 3
-    static const unsigned short v1 = 96, o1 = 36, o2 = 64, n = 256, DIGEST_SIZE = 64;
+    static const unsigned short v1 = 96, o1 = 36, o2 = 64, element_hex_size = 2, DIGEST_SIZE = 64;
 
     constexpr static void (*hash_str)(unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha512_string;
     constexpr static int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha512_file;
@@ -31,8 +31,8 @@
     typedef gf256 gf;
 #endif
 
-static const unsigned int n_variables = v1+o1+o2, n_polynomials = n_variables - v1, N = n_variables * (n_variables + 1) / 2, element_hex_size = (unsigned int) log2(n) / 4, elements_per_byte = 2 / element_hex_size;
-        
+static const unsigned int n_variables = v1+o1+o2, n_polynomials = n_variables - v1, N = n_variables * (n_variables + 1) / 2, elements_per_byte = 2 / element_hex_size, SALT_SIZE = 16, remaining_bytes = n_polynomials - DIGEST_SIZE * elements_per_byte;
+
 class Rainbow {
     private:
         
@@ -109,13 +109,13 @@ class Rainbow {
             // PARSE MESSAGE
 
             // will contain the message digest and the salt
-            unsigned char digest[n_polynomials * elements_per_byte];
+            unsigned char digest[DIGEST_SIZE * 2];
 
             // digest = H(m)
             hash_file(message_path, digest);
 
             // copy the salt at the end of the array (digest = H(m) || salt)
-            for (unsigned int i = 0; i < 16; i++) {
+            for (unsigned int i = 0; i < SALT_SIZE; i++) {
                 fgets(element_hex, 3, signature_file);
                 digest[DIGEST_SIZE + i] = strtol(element_hex, NULL, 16);
             }
@@ -125,15 +125,10 @@ class Rainbow {
             // digest = H( H(m) || salt )
             hash_str(digest, digest, DIGEST_SIZE + 16);
 
-            unsigned short remaining_bytes = n_polynomials - DIGEST_SIZE * elements_per_byte;
-
-            if (remaining_bytes != 0) {
-                unsigned char additional_digest[DIGEST_SIZE];
-                hash_str(digest, additional_digest, DIGEST_SIZE);
-
-                // move the new digest in the last part of the array
-                memcpy(digest + DIGEST_SIZE, additional_digest, remaining_bytes);
-            }
+            // pad the digest with its digest (inception!)
+            // digest = digest || H( digest )
+            if (remaining_bytes != 0)
+                hash_str(digest, digest + DIGEST_SIZE, DIGEST_SIZE);
 
             // insert the final digest
             if (element_hex_size == 1) {
@@ -218,7 +213,7 @@ int main(int argc, char *argv[]) {
     std::cout << "VERIFICATION: " << verify_signature(R.M, v) << std::endl;
 
     Vector<gf> v_guessed = Vector<gf>(v.nrows());
-    gf beta = gf(n / 2);
+    gf beta = gf(16 / 2);
 
     // for efficient verification
     unsigned int k = 3;

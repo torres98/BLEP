@@ -164,7 +164,7 @@ if __name__ == '__main__':
     SAMPLE_SIZE = 100
 
     for _ in range(SAMPLE_SIZE):
-        fill_matrix_randomly(v_guessed, min_value = 0, max_value = q // 2, elem_type = gf16)
+        fill_matrix_randomly(v_guessed, min_value = 0, max_value = q, elem_type = gf16)
 
         standard_ver_result = None
 

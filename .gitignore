@@ -1,7 +1,8 @@
 # folders
 __pycache__
 tmp
-.vscode/
+.vscode
+build
 
 #for binary files
 *.out

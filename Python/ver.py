@@ -2,7 +2,7 @@ import numpy as np
 
 def Ver(M, v):
     return not np.any(M.dot(v))
-    
+
 def generate_random_public_key():
     """Generates at random a valid public key"""
     
@@ -25,5 +25,3 @@ def generate_random_public_key():
 
     return M
     
-def Ver(M, v):
-    return not np.any(M.dot(v) % q)

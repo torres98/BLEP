@@ -1,7 +1,4 @@
-import numpy as np
 from gf4 import gf4_add, gf4_mul, gf4_mul_3, gf4_mul_2
-
-"works with tower representation"
 
 def gf16_add(a, b):
     return gf4_add(a >> 2, b >> 2) << 2 | gf4_add(a & 0x3, b & 0x3)
@@ -32,19 +29,6 @@ def gf16_add(a, b):
 
 def gf16_mul(a, b):
     return mul_lookup_table[a][b]
-
-"""def gf16_dot(A, B):
-    n = len(A)
-    m = 1 if len(B.shape) == 1 else B.shape[1]
-
-    C = np.zeros((n, m), dtype=int)
-
-    for i in range(n):
-        for j in range(m):
-            for h in range(A.shape[1]):
-                C[i][j] = gf16_add(C[i][j], gf16_mul(A[i][h], B[h][j]))
-
-    return C"""
 
 class gf16:
     def __init__(self, v):

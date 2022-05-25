@@ -1,7 +1,4 @@
-import numpy as np
 from gf16 import gf16_add, gf16_mul, gf16_mul_8
-
-"works with tower representation"
 
 def gf256_add(a, b):
     return gf16_add(a >> 4, b >> 4) << 4 | gf16_add(a & 0xf, b & 0xf)

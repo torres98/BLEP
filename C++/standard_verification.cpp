@@ -2,6 +2,7 @@
 #define _STANDARD_VERIFICATION
 
 #include "matrix.cpp"
+#include "vector.cpp"
 
 template <typename Element>
 bool verify_signature(Matrix<Element> &M, Vector<Element> &v) {
@@ -18,7 +19,7 @@ bool verify_signature(Matrix<Element> &M, Vector<Element> &v) {
         cell = Element();
 
         for (unsigned int j = 0; j < v.nrows(); j++)
-                cell += M[i][j] * v[j];
+            cell += M[i][j] * v[j];
 
         if (cell)
             return false;

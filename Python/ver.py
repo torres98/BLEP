@@ -1,13 +1,8 @@
 import numpy as np
-from sage.all import *
-from math import log2
 
-ROWS = 30
-COLUMNS = 50
-q = 1021 #must be prime
-
-SAMPLE_SIZE = 10000000
-
+def Ver(M, v):
+    return not np.any(M.dot(v))
+    
 def generate_random_public_key():
     """Generates at random a valid public key"""
     

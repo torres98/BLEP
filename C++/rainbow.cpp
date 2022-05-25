@@ -5,25 +5,28 @@
 #include "matrix.cpp"
 #include "vector.cpp"
 
+#ifndef VERSION
 #define VERSION 1
+#endif
+
 #define SAMPLE_SIZE 10000
 
 #if VERSION == 1
-    static const unsigned short v1 = 36, o1 = 32, o2 = 32, element_hex_size = 1, DIGEST_SIZE = 32;
+    static const unsigned short v1 = 36, o1 = 32, o2 = 32, q = 16, element_hex_size = 1, DIGEST_SIZE = 32;
 
     constexpr static void (*hash_str)(unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha256_string;
     constexpr static int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha256_file;
 
     typedef gf16 gf;
 #elif VERSION == 2
-    static const unsigned short v1 = 68, o1 = 32, o2 = 48, element_hex_size = 2, DIGEST_SIZE = 48;
+    static const unsigned short v1 = 68, o1 = 32, o2 = 48, q = 256, element_hex_size = 2, DIGEST_SIZE = 48;
 
     constexpr static void (*hash_str)(unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha384_string;
     constexpr static int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha384_file;
 
     typedef gf256 gf;
 #elif VERSION == 3
-    static const unsigned short v1 = 96, o1 = 36, o2 = 64, element_hex_size = 2, DIGEST_SIZE = 64;
+    static const unsigned short v1 = 96, o1 = 36, o2 = 64, q = 256, element_hex_size = 2, DIGEST_SIZE = 64;
 
     constexpr static void (*hash_str)(unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha512_string;
     constexpr static int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha512_file;
@@ -213,7 +216,6 @@ int main(int argc, char *argv[]) {
     std::cout << "VERIFICATION: " << verify_signature(R.M, v) << std::endl;
 
     Vector<gf> v_guessed = Vector<gf>(v.nrows());
-    gf beta = gf(16 / 2);
 
     // for efficient verification
     unsigned int k = 3;
@@ -225,7 +227,7 @@ int main(int argc, char *argv[]) {
     unsigned int efficient_error_count = 0, progressive_error_count = 0, efficient_progressive_error_count = 0;
 
     for (int i = 0; i < SAMPLE_SIZE; i++) {
-        fill_matrix_randomly(v_guessed, 0, beta);
+        fill_matrix_randomly(v_guessed, 0, q - 1);
 
         if (verify_signature(Z, v_guessed) && !verify_signature(R.M, v_guessed))
             efficient_error_count++;

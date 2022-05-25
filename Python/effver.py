@@ -1,25 +1,23 @@
-from ver import *
-from gf16 import *
+import numpy as np
 
-def offVer(M, k):
-    n = len(M)
+from utils import fill_matrix_randomly
+
+def offVer(M, k, max_value, elem_type=int, return_transformation=False):
+    n = M.shape[0]
 
     #Create the random matrix C
-    C = np.random.randint(0, q, (k, n))
+    C = np.empty((k, n), dtype=elem_type)
 
-    while not np.linalg.matrix_rank(C) == k:
-        C = np.random.randint(0, q, (k, n))
+    fill_matrix_randomly(C, 0, max_value, elem_type)
 
-    Z = C.dot(M) % q
+    #probably can't be done easily
+    #while not np.linalg.matrix_rank(C) == k:
+    #    C = np.random.randint(0, q, (k, n))
+
+    if return_transformation:
+        return C, C.dot(M)
     
-    return Z
-
-def onVer(Z, v):
-    """
-    - Z: short verification key
-    - v: signature of the message
-    """
-    return not np.any(Z.dot(v) % q)
+    return C.dot(M)
 
 def are_parallel(v, w):
     #extract couples different than 0,0

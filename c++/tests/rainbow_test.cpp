@@ -12,61 +12,67 @@ char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/t
 char const *signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature.txt";
 char const *message_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb";
 
+using Rainbow::gf;
+
 int main(int argc, char *argv[]) {
-    
-    Rainbow R;
-    R = Rainbow(pk_path);
 
-    Vector<gf> v = Rainbow::get_signature_vector(signature_path, message_path);
+    unsigned char salt[16];
 
-    assert(verify_signature(R.M, v));
+    Matrix<gf> PK = Rainbow::parse_public_key(pk_path);
+    Vector<gf> s = Rainbow::parse_signature(signature_path, salt);
+
+    Vector<gf> u = Rainbow::get_result_vector(message_path, salt);
+
+    assert(verify_signature(PK, s, u));
     std::cout << "Successfully verified the Rainbow signature." << std::endl;
 
-    Vector<gf> v_guessed = Vector<gf>(v.nrows());
+    //C(P | I) * (s|u) = 0 -> C*P * s = C*u
 
     // for efficient verification
     unsigned int k = 3;
-    Matrix<gf> Z = offVer(R.M, k);
+    Matrix<gf> C = generate_random_linear_transformation<gf>(k, PK.nrows());
+    Matrix<gf> svk = C * PK;
+    Vector<gf> u_eff = (Vector<gf>) (C * u);
+
+    assert(verify_signature(svk, s, u_eff));
+    std::cout << "Efficiently verified the Rainbow signature." << std::endl;
 
     // for progressive verification
     unsigned int t = 2;
 
-    unsigned int efficient_error_count = 0, progressive_error_count = 0, efficient_progressive_error_count = 0;
-    unsigned int effff = 0;
+    assert(progVer(PK, s, u, t));
+    std::cout << "Progressively verified the Rainbow signature." << std::endl;
 
-    Vector<gf> u = Vector<gf>(R.M.nrows(), false,  true);
-    Vector<gf> u_eff = Vector<gf>(k, false,  true);
+    assert(progVer(svk, s, u_eff, t));
+    std::cout << "Efficiently and progressively verified the Rainbow signature." << std::endl << std::endl;
+
+
+    Vector<gf> signature_guess = Vector<gf>(s.nrows());
+    unsigned int efficient_error_count = 0, progressive_error_count = 0, efficient_progressive_error_count = 0;
 
     for (int i = 0; i < SAMPLE_SIZE; i++) {
-        fill_matrix_randomly(v_guessed, 0, q - 1);
+        fill_matrix_randomly(signature_guess, 0, Rainbow::q - 1);
 
-        if (verify_signature(Z, v_guessed) && !verify_signature(R.M, v_guessed))
+        if (verify_signature(svk, signature_guess, u_eff) && !verify_signature(PK, signature_guess, u))
             efficient_error_count++;
 
-        if (verify_signature(Z, v_guessed, u_eff) && !verify_signature(R.M, v_guessed, u))
-            effff++;
-
-        if (progVer(R.M, v_guessed, t) && !verify_signature(R.M, v_guessed))
+        if (progVer(PK, signature_guess, u, t) && !verify_signature(PK, signature_guess, u))
             progressive_error_count++;
 
-        if (progVer(Z, v_guessed, t) && !verify_signature(R.M, v_guessed))
+        if (progVer(svk, signature_guess, u_eff, t) && !verify_signature(PK, signature_guess, u))
             efficient_progressive_error_count++;
     }
 
     std::cout << "EFFICIENT VERIFICATION STATS" << std::endl;
-    std::cout << "Error percentage: " << (double) efficient_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;
-    std::cout << "Security bits: " << ((efficient_error_count == 0) ? 0: log2((double) efficient_error_count / SAMPLE_SIZE)) << std::endl << std::endl;
-
-    std::cout << "EFFICIENT VERIFICATION STATS" << std::endl;
-    std::cout << "Error percentage: " << (double) effff / SAMPLE_SIZE * 100 << "%" << std::endl;
-    std::cout << "Security bits: " << ((effff == 0) ? 0: log2((double) effff / SAMPLE_SIZE)) << std::endl << std::endl;
+    std::cout << "Error percentage: " << (long double) efficient_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;
+    std::cout << "Security bits: " << ((efficient_error_count == 0) ? 0: log2((long double) efficient_error_count / SAMPLE_SIZE)) << std::endl << std::endl;
 
     std::cout << "PROGRESSIVE VERIFICATION STATS" << std::endl;
-    std::cout << "Error percentage: " << (double) progressive_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;
-    std::cout << "Security bits: " << ((progressive_error_count == 0) ? 0: log2((double) progressive_error_count / SAMPLE_SIZE)) << std::endl << std::endl;
+    std::cout << "Error percentage: " << (long double) progressive_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;
+    std::cout << "Security bits: " << ((progressive_error_count == 0) ? 0: log2((long double) progressive_error_count / SAMPLE_SIZE)) << std::endl << std::endl;
 
     std::cout << "EFFICIENT+PROGRESSIVE VERIFICATION STATS" << std::endl;
-    std::cout << "Error percentage: " << (double) efficient_progressive_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;
-    std::cout << "Security bits: " << ((efficient_progressive_error_count == 0) ? 0: log2((double) efficient_progressive_error_count / SAMPLE_SIZE)) << std::endl << std::endl;
+    std::cout << "Error percentage: " << (long double) efficient_progressive_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;
+    std::cout << "Security bits: " << ((efficient_progressive_error_count == 0) ? 0: log2((long double) efficient_progressive_error_count / SAMPLE_SIZE)) << std::endl << std::endl;
 
 }

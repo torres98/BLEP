@@ -41,7 +41,7 @@ bool progVer(const Matrix<Element> &M, const Vector<Element> &v, unsigned int t,
         cell = Element();
 
         for (unsigned int j = 0; j < v.nrows(); j++)
-            cell += M[row_indices[i]][j] * v[j];
+            cell += M(row_indices[i], j) * v(j);
 
         if (cell)
             verification_result = false;
@@ -84,10 +84,13 @@ bool progVer_lazy(const Matrix<Element> &M, const Vector<Element> &v, unsigned i
         cell = Element();
 
         for (unsigned int j = 0; j < v.nrows(); j++)
-            cell += M[row_indices[i]][j] * v[j];
+            cell += M(row_indices[i], j) * v(j);
 
-        if (cell)
+        if (cell) {
+            delete[] row_indices;
+
             return false;
+        }
     }
 
     delete[] row_indices;
@@ -134,9 +137,9 @@ bool progVer(const Matrix<Element> &PK, const Vector<Element> &s, const Vector<E
         cell = Element();
 
         for (unsigned int j = 0; j < s.nrows(); j++)
-            cell += PK[row_indices[i]][j] * s[j];
+            cell += PK(row_indices[i], j) * s(j);
 
-        if (cell != u[row_indices[i]])
+        if (cell != u(row_indices[i]))
             verification_result = false;
     }
 
@@ -183,10 +186,13 @@ bool progVer_lazy(const Matrix<Element> &PK, const Vector<Element> &s, const Vec
         cell = Element();
 
         for (unsigned int j = 0; j < s.nrows(); j++)
-            cell += PK[row_indices[i]][j] * s[j];
+            cell += PK(row_indices[i], j) * s(j);
 
-        if (cell != u[row_indices[i]])
+        if (cell != u(row_indices[i])) {
+            delete[] row_indices;
+            
             return false;
+        }
     }
 
     delete[] row_indices;

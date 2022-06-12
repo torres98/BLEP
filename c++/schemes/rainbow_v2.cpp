@@ -5,7 +5,7 @@
 #include "../include/vector.h"
 
 #ifndef VERSION
-    #define VERSION 3
+    #define VERSION 1
 #endif
 
 #if VERSION == 1
@@ -15,6 +15,8 @@
 #else
     #error "Rainbow version not supported."
 #endif
+
+#define hex_to_int(chr) (chr >= 'a') ? (chr - 'a' + 10) : (chr - '0')
 
 namespace Rainbow {
 
@@ -56,7 +58,7 @@ namespace Rainbow {
         for (unsigned int i=0; i < N; i++) {
             for (unsigned int j=0; j < n_polynomials; j++) {
                 fgets(element_hex, element_hex_size + 1, pk_file);
-                PK[j][i] = gf(strtol(element_hex, NULL, 16)); 
+                PK(j, i) = gf(strtol(element_hex, NULL, 16)); 
             }
         }
 
@@ -75,40 +77,36 @@ namespace Rainbow {
         while (fgetc(signature_file) != '=');
         fgetc(signature_file);
 
-        char element_hex[3];
+        char buffer[3];
 
         // fill the signature vector
-        for (unsigned int i = 0; i < n_variables; i++) {
-            fgets(element_hex, element_hex_size + 1, signature_file);
-            s[i] = gf(strtol(element_hex, NULL, 16));
+        if (element_hex_size == 1) {
+            for (unsigned int i = 0; i < n_variables; i+=2) {
+                fgets(buffer, 3, signature_file);
+                s(i) = gf(hex_to_int(buffer[1]));
+                s(i+1) = gf(hex_to_int(buffer[0]));
+            }
+        } else {
+            for (unsigned int i = 0; i < n_variables; i++) {
+                fgets(buffer, 3, signature_file);
+                s(i) = gf(strtol(buffer, NULL, 16));
+            }
         }
 
         // fill the salt buffer
         for (unsigned int i = 0; i < SALT_SIZE; i++) {
-            fgets(element_hex, 3, signature_file);
-            salt_buffer[i] = strtol(element_hex, NULL, 16);
+            fgets(buffer, 3, signature_file);
+            salt_buffer[i] = strtol(buffer, NULL, 16);
         }
 
         fclose(signature_file);
 
-        // Compute the explicit signature vector
-
-        if (element_hex_size == 1) {
-            gf tmp;
-
-            for (unsigned int i = 0; i < n_variables; i+=2) {
-                tmp = s[i+1];
-                s[i+1] = s[i];
-                s[i] = tmp;
-            }
-        }
-
-        // quadratic products
+        // Compute the explicit signature vector with the quadratic products
         unsigned int h = N - 1;
 
         for (unsigned int i = n_variables; i > 0; i--)
             for (unsigned int j = n_variables; j >= i; j--)
-                s[h--] = s[i-1] * s[j-1];
+                s(h--) = s(i-1) * s(j-1);
 
         return s;
 
@@ -144,12 +142,12 @@ namespace Rainbow {
         // insert the final digest
         if (element_hex_size == 1) {
             for (unsigned int i = 0; i < n_polynomials; i+=2) {
-                u[i] = gf(digest[i/2] >> 4);
-                u[i+1] = gf(digest[i/2] & 0xf);
+                u(i) = gf(digest[i/2] >> 4);
+                u(i+1) = gf(digest[i/2] & 0xf);
             }
         } else {
             for (unsigned int i = 0; i < n_polynomials; i++)
-                u[i] = gf(digest[i]);
+                u(i) = gf(digest[i]);
         }
 
         return u;

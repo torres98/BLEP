@@ -14,7 +14,7 @@ int main() {
 
     for (unsigned int i = 0; i < M_int.nrows(); i++)
         for (unsigned int j = 0; j < M_int.ncolumns(); j++)
-            assert(M_int[i][j] == default_value);
+            assert(M_int(i, j) == default_value);
 
     //Constructor from 2D array
 
@@ -34,26 +34,22 @@ int main() {
     
     for (unsigned int i = 0; i < M_slice.nrows(); i++)
         for (unsigned int j = 0; j < M_slice.ncolumns(); j++)
-            assert(M_slice[i][j] == M[row_i+i][col_i+j]);
+            assert(M_slice(i, j) == M(row_i+i, col_i+j));
 
     std::cout << M << M_slice;
 
     //Product operator
-    Matrix<int> A = Matrix<int>(M1), B = Matrix<int>(M2); //, A_times_B = Matrix<int>(M1_times_M2);
+    Matrix<int> A = Matrix<int>(M1), B = Matrix<int>(M2);
     assert(A*B == Matrix<int>(M1_times_M2));
 
-    std::cout << A;
     //Assignment operator
-
-    Vector<int> v = Vector<int>(10, false, true);
+    Vector<int> v = Vector<int>(10);
 
     try {
-        v[10] = 10;
-        assert(0 == 1);
+        v(10) = 10;
     } catch (std::invalid_argument& e) {
         std::cout << "Exception correctly caught." << std::endl;
     }
-    
-    std::cout << v;
+
     return 0;
 }

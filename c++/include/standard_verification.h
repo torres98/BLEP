@@ -20,7 +20,7 @@ bool verify_signature(const Matrix<Element> &M, const Vector<Element> &v) {
         cell = Element();
 
         for (unsigned int j = 0; j < v.nrows(); j++)
-            cell += M[i][j] * v[j];
+            cell += M(i, j) * v(j);
 
         if (cell)
             verification_result = false;
@@ -45,7 +45,7 @@ bool verify_signature_lazy(const Matrix<Element> &M, const Vector<Element> &v) {
         cell = Element();
 
         for (unsigned int j = 0; j < v.nrows(); j++)
-            cell += M[i][j] * v[j];
+            cell += M(i, j) * v(j);
 
         if (cell)
             return false;
@@ -77,9 +77,9 @@ bool verify_signature(const Matrix<Element> &PK, const Vector<Element> &s, const
         cell = Element();
 
         for (unsigned int j = 0; j < s.nrows(); j++)
-            cell += PK[i][j] * s[j];
+            cell += PK(i, j) * s(j);
 
-        if (cell != u[i])
+        if (cell != u(i))
             verification_result = false;
 
     }
@@ -108,9 +108,9 @@ bool verify_signature_lazy(const Matrix<Element> &PK, const Vector<Element> &s, 
         cell = Element();
 
         for (unsigned int j = 0; j < s.nrows(); j++)
-            cell += PK[i][j] * s[j];
+            cell += PK(i, j) * s(j);
 
-        if (cell != u[i])
+        if (cell != u(i))
             return false;
 
     }

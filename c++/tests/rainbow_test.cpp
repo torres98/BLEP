@@ -1,7 +1,7 @@
 #include <assert.h>
 
 #include "../include/random_utils.h"
-#include "../schemes/rainbow.cpp"
+#include "../include/rainbow.h"
 #include "../include/standard_verification.h"
 #include "../include/efficient_verification.h"
 #include "../include/progressive_verification.h"

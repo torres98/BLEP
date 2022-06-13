@@ -14,16 +14,13 @@ class gf16 {
 
         gf16();
 
-        operator bool() const;
-
         gf16 operator+(const gf16 &b) const;
-
         gf16 operator+=(const gf16 &b);
-
         gf16 operator-(const gf16 &b) const;
-
         gf16 operator*(const gf16 &b) const;
 
+        operator bool() const;
+        
         bool operator==(const gf16 &b) const;
 
         bool operator!=(const gf16 &b) const;

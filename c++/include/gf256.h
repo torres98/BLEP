@@ -15,16 +15,13 @@ class gf256 {
 
         gf256();
 
-        operator bool() const;
-
         gf256 operator+(const gf256 &b) const;
-
         gf256 operator+=(const gf256 &b);
-
         gf256 operator-(const gf256 &b) const;
-
         gf256 operator*(const gf256 &b) const;
 
+        operator bool() const;
+        
         bool operator==(const gf256 &b) const;
 
         bool operator!=(const gf256 &b) const;

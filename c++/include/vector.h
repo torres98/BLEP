@@ -1,11 +1,11 @@
 #ifndef VECTOR_H
 #define VECTOR_H
 
-#include "matrix.h"
-
+#include <cstring>
 #include <iostream>
 #include <sstream>
-#include <cstring>
+
+#include "matrix.h"
 
 
 template <typename Element>
@@ -61,7 +61,7 @@ class Vector: public Matrix<Element> {
             return result;
         }
 
-        friend std::ostream& operator<<(std::ostream &s, const Vector<Element> &v) {
+        friend std::ostream& operator<<(std::ostream &s, const Vector &v) {
 
             uint16_t n = v.size();
 

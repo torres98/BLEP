@@ -152,7 +152,7 @@ class Matrix {
             return (this -> M)[i*columns + j];
         }
 
-        //setter (tofix)
+        //setter (to change)
         Element& operator() (uint16_t i, uint16_t j) {
             if (i >= this -> rows) {
                 std::ostringstream error_log;
@@ -207,12 +207,13 @@ class Matrix {
                 throw std::invalid_argument(error_log.str());
             }
 
-            Matrix O = Matrix(this -> rows, A.columns, true);
+            uint16_t n = this -> rows, m = A.columns, p = this -> columns;
+            Matrix O = Matrix(n, m, true);
             
-            for (uint16_t i = 0; i < this -> rows; i++)
-                for (uint16_t j = 0; j < A.columns; j++)
-                    for (uint16_t h = 0; h < this -> columns; h++)
-                        O.M[i*O.columns + j] += (this -> M)[i*this -> columns + h] * A.M[h*A.columns + j];
+            for (uint16_t i = 0; i < n; i++)
+                for (uint16_t j = 0; j < m; j++)
+                    for (uint16_t h = 0; h < p; h++)
+                        O.M[i*m + j] += (this -> M)[i*p + h] * A.M[h*m + j];
 
             return O;
         }
@@ -224,7 +225,7 @@ class Matrix {
 
                 this -> rows = A.rows;
                 this -> columns = A.columns;
-                this -> M = new Element[this -> rows * this -> columns];
+                this -> M = new Element[this -> size()];
             }
 
             std::copy(A.M, A.M + rows * columns, this -> M);
@@ -241,14 +242,14 @@ class Matrix {
             if (this -> rows != A.rows || this -> columns != A.columns)
                 return false;
 
-            return std::equal(this -> M, this -> M + rows * columns, A.M);
+            return std::equal(this -> M, this -> M + this -> size(), A.M);
         }
 
         ~Matrix() {
             delete[] this -> M;
         }
 
-        friend std::ostream& operator<<(std::ostream &s, const Matrix<Element> &A) {
+        friend std::ostream& operator<<(std::ostream &s, const Matrix &A) {
             uint16_t n = A.rows, m = A.columns;
 
             if (n == 0 || m == 0) {

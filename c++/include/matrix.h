@@ -169,6 +169,36 @@ class Matrix {
             return (this -> M)[i*columns + j];
         }
 
+        Matrix operator+(const Matrix &A) const {
+            if (this -> rows != A.rows || this -> columns != A.columns) {
+                std::ostringstream error_log;
+                error_log << "Incompatible sizes for sum between matrices of size " << this -> rows << "x" << this -> columns << " and " << A.rows << "x" << A.columns;
+                throw std::invalid_argument(error_log.str());
+            }
+
+            Matrix O = Matrix(this -> rows, this -> columns, true);
+            
+            for (uint32_t i = 0; i < this -> size(); i++)
+                O.M[i] = (this -> M)[i] + A.M[i];
+
+            return O;
+        }
+
+        Matrix operator-(const Matrix &A) const {
+            if (this -> rows != A.rows || this -> columns != A.columns) {
+                std::ostringstream error_log;
+                error_log << "Incompatible sizes for subtraction between matrices of size " << this -> rows << "x" << this -> columns << " and " << A.rows << "x" << A.columns;
+                throw std::invalid_argument(error_log.str());
+            }
+
+            Matrix O = Matrix(this -> rows, this -> columns, true);
+            
+            for (uint32_t i = 0; i < this -> size(); i++)
+                O.M[i] = (this -> M)[i] - A.M[i];
+
+            return O;
+        }
+
         Matrix operator*(const Matrix &A) const {
             
             if (this -> columns != A.rows) {
@@ -201,6 +231,10 @@ class Matrix {
 
             return *this;
 
+        }
+
+        operator bool() {
+            return std::any_of(this -> M, this -> M + this -> size(), [](Element x) { return bool(x); });
         }
 
         bool operator==(const Matrix &A) const {

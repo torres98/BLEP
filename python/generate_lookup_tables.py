@@ -1,25 +1,40 @@
 from schemes.gf.gf256 import gf256 as gf
 
 q = 256
+spaces = '    ' if q == 16 else '     '
+pad = 2 if q == 16 else 3
 
-print(f'unsigned char gf{q}_sub_lookup[{q}][{q}] = {{')
+print(f'const unsigned char gf{q}_add_lookup[] = {{')
 
 for a in range(q):
-    print('    {', end='')
+    print(f'   {spaces * a}', end = '')
+    for b in range(a+1, q):
+        print(f'{str(gf(a) + gf(b)): >{pad}}', end = ', ')
+    print()
+print('};')
 
-    for b in range(q):
+print(f'const unsigned char gf{q}_mul_lookup[] = {{')
 
-        #find c such that a = b + c
-        for c in range(q):
-            if gf(c) + gf(b) == gf(a):
-                print(f'{c}, ', end = '')
-                break
+for a in range(1, q):
+    print(f'   {spaces * (a-1)}', end = '')
+    for b in range(a, q):
+        print(f'{str(gf(a) * gf(b)): >{pad}}', end = ', ')
+    print()
+print('};')
 
-    print('},')
+exit()
+
+print(f'const unsigned char gf{q}_mul_lookup[{q}][{q}] = {{')
+
+for a in range(q):
+    print('   ', end = '')
+    for b in range(a+1, q):
+        print(gf(a) * gf(b), end = ', ')
+    print()
 
 print('};')
 
-print(f'unsigned char gf{q}_div_lookup[{q}][{q}] = {{')
+print(f'const unsigned char gf{q}_div_lookup[{q}][{q}] = {{')
 
 for a in range(q):
     print('    {', end='')
@@ -36,7 +51,7 @@ for a in range(q):
 
 print('};')
 
-print(f'unsigned char gf{q}_inv_lookup[{q-1}] = {{', end = '')
+print(f'const unsigned char gf{q}_inv_lookup[{q-1}] = {{', end = '')
 
 for a in range(1, q):
 

@@ -1,29 +1,29 @@
-#include <fstream>
 #include <sstream>
+#include <stdexcept>
 
 #include "../include/file_utils.h"
 
-std::string read(const char *file_path) {
-    
-    std::ifstream file(file_path);
-    std::stringstream file_content;
 
-    if (file.fail()) {
-        std::cout << "Error during read of " << file_path << std::endl;
-        exit(-1);
+FILE* open_file(const char* filename, const char* modes) {
+    FILE* f = fopen(filename, modes);
+
+    if (f == NULL) {
+        std::ostringstream error_log;
+        error_log << "Error during opening of file " << filename << " (modes " << modes << ")";   
+        throw std::runtime_error(error_log.str());
     }
-
-    file_content << file.rdbuf();
-
-    file.close();
     
-    return file_content.str();
+    return f;
 }
 
-unsigned int get_file_size(FILE* f) {
+size_t get_file_size(FILE* f) {
     fseek(f, 0, SEEK_END);
-    unsigned int file_size = ftell(f);
+    long file_size = ftell(f);
+    
+    if (file_size == -1L)
+        throw std::runtime_error("An error occurred while reading file size");
+
     rewind(f);
 
-    return file_size;
+    return (size_t) file_size;
 }

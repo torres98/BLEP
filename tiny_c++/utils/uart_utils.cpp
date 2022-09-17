@@ -1,8 +1,6 @@
-#include <string.h>
 #include <cstdint>
 
 #include <zephyr.h>
-#include <device.h>
 #include <drivers/uart.h>
 
 #include "../include/uart_utils.h"
@@ -11,13 +9,13 @@
 #define UART_DEVICE_NODE DT_CHOSEN(zephyr_shell_uart)
 
 const struct device *uart_dev = DEVICE_DT_GET(UART_DEVICE_NODE);
-const unsigned char ACK[3] = {'O', 'K', '\n'};
+const unsigned char ACK[4] = {'A', 'C', 'K', '\n'};
+const unsigned char OK[3] = {'O', 'K', '\n'};
 
 /*
  * Read and return a single byte from UART.
  */
 unsigned char read_byte(const struct device *dev) {
-
 	unsigned char b;
 
 	while (uart_poll_in(dev, &b) != 0) {}
@@ -28,13 +26,11 @@ unsigned char read_byte(const struct device *dev) {
 /*
  * Read n bytes from UART into the given buffer.
  */
-
 void read_n_bytes(const struct device *dev, unsigned char *buffer, unsigned int n) {
 	for (unsigned int i = 0; i < n; i++)
 		buffer[i] = read_byte(dev);
 
 	send_ack(dev);
-
 }
 
 void read_n_bytes_segmented(const struct device *dev, unsigned char *buffer, unsigned int n) {
@@ -54,14 +50,14 @@ void read_n_bytes_segmented(const struct device *dev, unsigned char *buffer, uns
 			
 		send_ack(dev);
 	}
-
 }
 
 uint32_t read_uint32(const struct device *dev) {
     uint32_t value = 0;
+	send_ok(uart_dev);
 
-    for (unsigned int i = 0; i < 4; i++)
-		value |= read_byte(dev) << (i * 8);
+    for (unsigned short i = 0; i < 12; i+=3)
+		value |= read_byte(dev) << i;
 	
 	send_ack(dev);
     return value;
@@ -73,9 +69,12 @@ uint32_t read_uint32(const struct device *dev) {
 void send_n_bytes(const struct device *dev, const unsigned char *message, unsigned int n) {
 	for (unsigned int i = 0; i < n; i++)
 		uart_poll_out(dev, message[i]);
-
 }
 
 void send_ack(const struct device *dev) {
-	send_n_bytes(dev, ACK, 3);
+	send_n_bytes(dev, ACK, 4);
+}
+
+void send_ok(const struct device *dev) {
+	send_n_bytes(dev, OK, 3);
 }

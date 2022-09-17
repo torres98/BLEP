@@ -1,6 +1,5 @@
 #include <iostream>
 
-
 struct Foo {
     uint8_t v;
 };
@@ -8,13 +7,16 @@ struct Foo {
 int main() {
 
     std::cout << "Eccoci qua\n";
-    unsigned int SIZE = 435184;
+    unsigned int SIZE = 5000;
 
-    Foo* p = new Foo[SIZE];
+    for (unsigned int i = 0; i < 10; i++) {
+        Foo* p = new Foo[SIZE];
 
-    p[SIZE-1].v = 104;
-    std::cout << p[SIZE-1].v << ": " << p << " - " << &(p[SIZE-1]) << " = " << p - &(p[SIZE-1]) << std::endl;
+        p[SIZE-1].v = 104;
+        std::cout << p << std::endl;
+        delete[] p;
+    }
 
-    delete[] p;
+    std::cout << "FINE\n";
     return 0;
 }

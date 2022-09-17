@@ -3,28 +3,69 @@
 #include "../include/rainbow.h"
 
 #include "../include/hash_utils.h"
-#include "../include/matrix.h"
-#include "../include/vector.h"
+#include "../include/math_utils.h"
 
-#define hex_to_int(chr) (chr >= 'a') ? (chr - 'a' + 10) : (chr - '0')
+#if RAINBOW_VERSION == 1
+    #define hex_to_int(chr) (chr >= 'a') ? (chr - 'a' + 10) : (chr - '0')
 
-#if VERSION == 1
-    constexpr void (*hash_str)(const unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha256_string;
-    constexpr int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha256_file;
+    #define HASH_RAW_STR sha256_string
+    #define HASH_FILE sha256_file
 
-#elif VERSION == 2
-    constexpr void (*hash_str)(const unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha384_string;
-    constexpr int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha384_file;
+    #define SHA_DIGEST_SIZE 32
+    #define FINAL_DIGEST_SIZE 32
 
-#elif VERSION == 3
-    constexpr void (*hash_str)(const unsigned char* message, unsigned char* output_buffer, unsigned long long mlen) = sha512_string;
-    constexpr int (*hash_file)(const char* file_path, unsigned char* output_buffer) = sha512_file;
+    const unsigned short element_hex_size = 1;
+
+#elif RAINBOW_VERSION == 2
+    #define HASH_RAW_STR sha384_string
+    #define HASH_FILE sha384_file
+
+    #define SHA_DIGEST_SIZE 48
+    #define FINAL_DIGEST_SIZE 80
+
+    const unsigned short element_hex_size = 2;
+
+#elif RAINBOW_VERSION == 3
+    #define HASH_RAW_STR sha512_string
+    #define HASH_FILE sha512_file
+
+    #define SHA_DIGEST_SIZE 64
+    #define FINAL_DIGEST_SIZE 100
+
+    const unsigned short element_hex_size = 2;
 
 #endif
 
+using Rainbow::gf;
 
-Matrix<Rainbow::gf> Rainbow::parse_public_key(const char *pk_path) {
-    Matrix<gf> PK = Matrix<gf>(n_polynomials, N, true);
+
+void Rainbow::get_message_digest(const char* message_path, unsigned char *output_buffer) {
+    HASH_FILE(message_path, output_buffer);
+}
+    
+void Rainbow::get_complete_digest(const char* message_path, const unsigned char* salt, unsigned char *output_buffer) {
+    unsigned char temp_buffer[SHA_DIGEST_SIZE + SALT_SIZE];
+
+    // temp_buffer = H(m)
+    get_message_digest(message_path, temp_buffer);
+
+    // copy the salt at the end of the array (digest = H(m) || salt)
+    memcpy(temp_buffer + SHA_DIGEST_SIZE, salt, SALT_SIZE);
+
+    // temp_buffer = H( H(m) || salt )
+    HASH_RAW_STR(temp_buffer, output_buffer, SHA_DIGEST_SIZE + SALT_SIZE);
+
+    // pad the digest with its digest (digestception!)
+    // digest = H( H(m) || salt ) || H( H( H(m) || salt ) )
+    #if RAINBOW_VERSION != 1
+        HASH_RAW_STR(output_buffer, temp_buffer, SHA_DIGEST_SIZE);
+        memcpy(output_buffer + SHA_DIGEST_SIZE, temp_buffer, n_polynomials - SHA_DIGEST_SIZE);
+    #endif
+}
+
+
+MatrixDS<gf> Rainbow::parse_public_key(const char *pk_path) {
+    MatrixDS<gf> PK = MatrixDS<gf>(n_polynomials, N, true);
     FILE *pk_file = fopen(pk_path, "r");
 
     //consume the header of the pk file
@@ -36,7 +77,7 @@ Matrix<Rainbow::gf> Rainbow::parse_public_key(const char *pk_path) {
     for (unsigned int j=0; j < N; j++) {
         for (unsigned int i=0; i < n_polynomials; i++) {
             fgets(element_hex, element_hex_size + 1, pk_file);
-            PK(i, j) = gf(strtol(element_hex, NULL, 16)); 
+            PK.set(i, j, gf(strtol(element_hex, NULL, 16))); 
         }
     }
 
@@ -45,9 +86,9 @@ Matrix<Rainbow::gf> Rainbow::parse_public_key(const char *pk_path) {
     return PK;
 }
 
-Vector<Rainbow::gf> Rainbow::parse_signature(const char* signature_path, unsigned char *salt_buffer) {
+VectorDS<gf> Rainbow::parse_signature(const char* signature_path, unsigned char *salt_buffer) {
 
-    Vector<gf> s = Vector<gf>(N);
+    VectorDS<gf> s = VectorDS<gf>(N);
 
     FILE *signature_file = fopen(signature_path, "r");
 
@@ -58,18 +99,18 @@ Vector<Rainbow::gf> Rainbow::parse_signature(const char* signature_path, unsigne
     char buffer[3];
 
     // fill the signature vector
-    if (element_hex_size == 1) {
+    #if RAINBOW_VERSION == 1
         for (unsigned int i = 0; i < n_variables; i+=2) {
             fgets(buffer, 3, signature_file);
-            s(i) = gf(hex_to_int(buffer[1]));
-            s(i+1) = gf(hex_to_int(buffer[0]));
+            s.set(i, gf(hex_to_int(buffer[1])));
+            s.set(i+1, gf(hex_to_int(buffer[0])));
         }
-    } else {
+    #else
         for (unsigned int i = 0; i < n_variables; i++) {
             fgets(buffer, 3, signature_file);
-            s(i) = gf(strtol(buffer, NULL, 16));
+            s.set(i, gf(strtol(buffer, NULL, 16)));
         }
-    }
+    #endif
 
     // fill the salt buffer
     for (unsigned int i = 0; i < SALT_SIZE; i++) {
@@ -84,53 +125,29 @@ Vector<Rainbow::gf> Rainbow::parse_signature(const char* signature_path, unsigne
 
     for (unsigned int i = n_variables; i > 0; i--)
         for (unsigned int j = n_variables; j >= i; j--)
-            s(h--) = s(i-1) * s(j-1);
+            s.set(h--, s(i-1) * s(j-1));
 
     return s;
 
 }
 
-void Rainbow::get_message_digest(const char* message_path, unsigned char *output_buffer) {
-    hash_file(message_path, output_buffer);
-}
-    
-void Rainbow::get_complete_digest(const char* message_path, const unsigned char* salt, unsigned char *output_buffer) {
-    unsigned char temp_buffer[DIGEST_SIZE + SALT_SIZE];
+VectorDS<gf> Rainbow::get_result_vector(const char* message_path, const unsigned char* salt) {
+    VectorDS<gf> u = VectorDS<gf>(n_polynomials);
 
-    // temp_buffer = H(m)
-    get_message_digest(message_path, temp_buffer);
-
-    // copy the salt at the end of the array (digest = H(m) || salt)
-    memcpy(temp_buffer + DIGEST_SIZE, salt, SALT_SIZE);
-
-    // temp_buffer = H( H(m) || salt )
-    hash_str(temp_buffer, output_buffer, DIGEST_SIZE + SALT_SIZE);
-
-    // pad the digest with its digest (digestception!)
-    // digest = H( H(m) || salt ) || H( H( H(m) || salt ) )
-    if (remaining_bytes != 0) {
-        hash_str(output_buffer, temp_buffer, DIGEST_SIZE);
-        memcpy(output_buffer + DIGEST_SIZE, temp_buffer, remaining_bytes);
-    }
-}
-
-Vector<Rainbow::gf> Rainbow::get_result_vector(const char* message_path, const unsigned char* salt) {
-    Vector<gf> u = Vector<gf>(n_polynomials);
-
-    unsigned char digest[n_polynomials]; //fix this
+    unsigned char digest[FINAL_DIGEST_SIZE]; //fix this
 
     get_complete_digest(message_path, salt, digest);
 
     // insert the final digest
-    if (element_hex_size == 1) {
+    #if RAINBOW_VERSION == 1
         for (unsigned int i = 0; i < n_polynomials; i+=2) {
-            u(i) = gf(digest[i/2] >> 4);
-            u(i+1) = gf(digest[i/2] & 0xf);
+            u.set(i, gf(digest[i/2] >> 4));
+            u.set(i+1, gf(digest[i/2] & 0xf));
         }
-    } else {
+    #else
         for (unsigned int i = 0; i < n_polynomials; i++)
-            u(i) = gf(digest[i]);
-    }
+            u.set(i, gf(digest[i]));
+    #endif
 
     return u;
 }

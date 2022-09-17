@@ -3,8 +3,7 @@
 
 #include <iostream>
 
-std::string read(const char *file_path);
-
-unsigned int get_file_size(FILE* f);
+FILE* open_file(const char* filename, const char* mode);
+size_t get_file_size(FILE* f);
 
 #endif

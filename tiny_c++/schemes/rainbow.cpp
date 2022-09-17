@@ -1,137 +1,121 @@
 #include <device.h>
 #include <drivers/uart.h> 
 
+#include "../include/rainbow.h"
+
 #include "../include/uart_utils.h"
 #include "../include/hash_utils.h"
-#include "../include/matrix.h"
-#include "../include/vector.h"
+#include "../include/math_utils.h"
 
-#ifndef VERSION
-    #define VERSION 1
+#if RAINBOW_VERSION == 1
+    #define GF_MUL gf16_mul
+
+    #define HASH_RAW_STR sha256_raw_str
+    #define HASH_FROM_DEVICE sha256_from_device
+
+#elif RAINBOW_VERSION == 2
+    #define GF_MUL gf256_mul
+
+    #define HASH_RAW_STR sha384_raw_str
+    #define HASH_FROM_DEVICE sha384_from_device
+
+#elif RAINBOW_VERSION == 3
+    #define GF_MUL gf256_mul
+
+    #define HASH_RAW_STR sha512_raw_str
+    #define HASH_FROM_DEVICE sha512_from_device
+
 #endif
 
-#if VERSION == 1
-    #include "../include/gf16.h"
-#elif VERSION == 2 || VERSION == 3
-    #include "../include/gf256.h"
-#else
-    #error "Rainbow version not supported."
-#endif
+using Rainbow::gf;
 
 
-namespace Rainbow {
+void Rainbow::get_message_digest(const struct device *uart_dev, unsigned char *output_buffer, unsigned int mlen) {
+    send_ok(uart_dev); //maybe move inside function
 
-    #if VERSION == 1
-        const unsigned short v1 = 36, o1 = 32, o2 = 32, q = 16, element_hex_size = 1, DIGEST_SIZE = 32;
+    HASH_FROM_DEVICE(uart_dev, output_buffer, mlen);
+}
 
-        constexpr void (*hash_raw_str)(unsigned char* raw_str, unsigned char* output_buffer, unsigned long long mlen) = sha256_raw_str;
-        constexpr void (*hash_from_device)(const struct device* dev, unsigned char* output_buffer, unsigned long long mlen) = sha256_from_device;
+void Rainbow::get_complete_digest(unsigned char *output_buffer, const unsigned char *message_digest, const unsigned char* salt) {
+    unsigned char temp_buffer[SHA_DIGEST_SIZE + SALT_SIZE];
 
-        typedef gf16 gf;
-    #elif VERSION == 2
-        const unsigned short v1 = 68, o1 = 32, o2 = 48, q = 256, element_hex_size = 2, DIGEST_SIZE = 48;
-
-        constexpr void (*hash_raw_str)(unsigned char* raw_str, unsigned char* output_buffer, unsigned long long mlen) = sha384_raw_str;
-        constexpr void (*hash_from_device)(const struct device* dev, unsigned char* output_buffer, unsigned long long mlen) = sha384_from_device;
-
-        typedef gf256 gf;
-    #elif VERSION == 3
-        const unsigned short v1 = 96, o1 = 36, o2 = 64, q = 256, element_hex_size = 2, DIGEST_SIZE = 64;
-
-        constexpr void (*hash_raw_str)(unsigned char* raw_str, unsigned char* output_buffer, unsigned long long mlen) = sha512_raw_str;
-        constexpr void (*hash_from_device)(const struct device* dev, unsigned char* output_buffer, unsigned long long mlen) = sha512_from_device;
-
-        typedef gf256 gf;
-    #endif
+    // temp_buffer = H(m) || salt
+    memcpy(temp_buffer, message_digest, SHA_DIGEST_SIZE);
+    memcpy(temp_buffer + SHA_DIGEST_SIZE, salt, SALT_SIZE);
     
-    const unsigned int n_variables = v1+o1+o2, n_polynomials = n_variables - v1, N = n_variables * (n_variables + 1) / 2, elements_per_byte = 2 / element_hex_size, SALT_SIZE = 16, remaining_bytes = n_polynomials - DIGEST_SIZE * elements_per_byte;
+    HASH_RAW_STR(temp_buffer, output_buffer, SHA_DIGEST_SIZE + SALT_SIZE);
 
-    Vector<gf> parse_signature(const struct device *uart_dev, unsigned char *salt_buffer) {
+    #if RAINBOW_VERSION != 1
+        HASH_RAW_STR(output_buffer, temp_buffer, SHA_DIGEST_SIZE);
+        memcpy(output_buffer + SHA_DIGEST_SIZE, temp_buffer, n_polynomials - SHA_DIGEST_SIZE);
+    #endif
+}
 
-        Vector<gf> s = Vector<gf>(N);
+void Rainbow::get_complete_digest(const struct device *uart_dev, unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen) {
+    unsigned char temp_buffer[SHA_DIGEST_SIZE + SALT_SIZE];
 
-        if (element_hex_size == 1) {
-            unsigned char byte_read;
+    get_message_digest(uart_dev, temp_buffer, mlen);
+    
+    // copy the salt at the end of the array (digest = H(m) || salt)
+    memcpy(temp_buffer + SHA_DIGEST_SIZE, salt, SALT_SIZE);
 
-            for (unsigned int i = 0; i < n_variables; i+=2) {
-                byte_read = read_byte(uart_dev);
+    HASH_RAW_STR(temp_buffer, output_buffer, SHA_DIGEST_SIZE + SALT_SIZE);
 
-                // inverted order
-                s[i] = gf(byte_read & 0xf);
-                s[i+1] = gf(byte_read >> 4);
-            }
+    #if RAINBOW_VERSION != 1
+        HASH_RAW_STR(output_buffer, temp_buffer, SHA_DIGEST_SIZE);
+        memcpy(output_buffer + SHA_DIGEST_SIZE, temp_buffer, n_polynomials - SHA_DIGEST_SIZE);
+    #endif
+}
 
-        } else {
-            for (unsigned int i = 0; i < n_variables; i++)
-                s[i] = gf(read_byte(uart_dev));
+VectorDS<gf> Rainbow::parse_signature(const struct device *uart_dev, unsigned char *salt_buffer) {
+    VectorDS<gf> s = VectorDS<gf>(N);
+
+    send_ok(uart_dev);
+
+    #if RAINBOW_VERSION == 1
+        for (unsigned int i = 0; i < n_variables; i+=2) {
+            unsigned char byte_read = read_byte(uart_dev);
+
+            // inverted order
+            s.set(i, gf(byte_read));
+            s.set(i+1, gf(byte_read >> 4));
         }
 
-        // read salt
-        read_n_bytes(uart_dev, salt_buffer, SALT_SIZE);
+    #else
+        //read_n_bytes_segmented(uart_dev, (unsigned char*) &(s(0)), n_variables);
+        for (unsigned int i = 0; i < n_variables; i++)
+            s.set(i, gf(read_byte(uart_dev)));
+    
+    #endif
+
+    // read salt
+    read_n_bytes(uart_dev, salt_buffer, SALT_SIZE);
+    
+    // compute the quadratic products
+    unsigned int h = N - 1;
+
+    for (unsigned int i = n_variables; i > 0; i--)
+        for (unsigned int j = n_variables; j >= i; j--)
+            s.set(h--, s(i-1) * s(j-1));
+
+    return s;
+}
+
+VectorDS<gf> Rainbow::get_result_vector(const unsigned char* digest) {
+    VectorDS<gf> u = VectorDS<gf>(n_polynomials);
+
+    // insert the final digest
+    #if RAINBOW_VERSION == 1
+        for (unsigned short i = 0; i < n_polynomials; i+=2) {
+            u.set(i, gf(digest[i/2] >> 4));
+            u.set(i+1, gf(digest[i/2]));
+        }
+
+    #else
+        for (unsigned short i = 0; i < n_polynomials; i++)
+            u.set(i, gf(digest[i]));
         
-        // compute the quadratic products
-        unsigned int h = N - 1;
+    #endif
 
-        for (unsigned int i = n_variables; i > 0; i--)
-            for (unsigned int j = n_variables; j >= i; j--)
-                s[h--] = s[i-1] * s[j-1];
-
-        return s;
-
-    }
-
-    void get_message_digest(const struct device *uart_dev, unsigned char *output_buffer, unsigned int mlen) {
-        hash_from_device(uart_dev, output_buffer, mlen);
-    }
-
-    void get_complete_digest(unsigned char *output_buffer, const unsigned char *message_digest, const unsigned char* salt) {
-        unsigned char temp_buffer[DIGEST_SIZE * 2];
-
-        // temp_buffer = H(m) || salt
-        memcpy(temp_buffer, message_digest, DIGEST_SIZE);
-        memcpy(temp_buffer + DIGEST_SIZE, salt, SALT_SIZE);
-        
-        hash_raw_str(temp_buffer, output_buffer, DIGEST_SIZE + SALT_SIZE);
-
-        if (remaining_bytes != 0) {
-            hash_raw_str(output_buffer, temp_buffer, DIGEST_SIZE);
-            memcpy(output_buffer + DIGEST_SIZE, temp_buffer, remaining_bytes);
-        }
-
-    }
-
-    void get_complete_digest(const struct device *uart_dev, unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen) {
-        unsigned char temp_buffer[DIGEST_SIZE * 2];
-
-        get_message_digest(uart_dev, temp_buffer, mlen);
-        
-        // copy the salt at the end of the array (digest = H(m) || salt)
-        memcpy(temp_buffer + DIGEST_SIZE, salt, SALT_SIZE);
-
-        hash_raw_str(temp_buffer, output_buffer, DIGEST_SIZE + SALT_SIZE);
-
-        if (remaining_bytes != 0) {
-            hash_raw_str(output_buffer, temp_buffer, DIGEST_SIZE);
-            memcpy(output_buffer + DIGEST_SIZE, temp_buffer, remaining_bytes);
-        }
-
-    }
-
-    Vector<gf> get_result_vector(const unsigned char* digest) {
-        Vector<gf> u = Vector<gf>(n_polynomials);
-
-        // insert the final digest
-        if (element_hex_size == 1) {
-            for (unsigned int i = 0; i < n_polynomials; i+=2) {
-                u[i] = gf(digest[i/2] >> 4);
-                u[i+1] = gf(digest[i/2] & 0xf);
-            }
-        } else {
-            for (unsigned int i = 0; i < n_polynomials; i++)
-                u[i] = gf(digest[i]);
-        }
-
-        return u;
-    }
-
-};
+    return u;
+}

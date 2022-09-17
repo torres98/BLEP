@@ -1,43 +1,26 @@
 #ifndef EFFICIENT_VERIFICATION_H
 #define EFFICIENT_VERIFICATION_H
 
-#include "matrix.h"
-#include "vector.h"
-
-/*
-template <typename Element>
-Matrix<Element> offVer(Matrix<Element> &M, unsigned int k, bool std=true) {
-
-    Matrix<Element> C = Matrix<Element>(k, M.nrows()); 
-    fill_matrix_randomly(C); 
-
-    //while not np.linalg.matrix_rank(C) == k:
-    //    C = np.random.randint(0, q, (k, n))
-
-    if (std)
-        return C * M;
-    
-    return C * M || C;
-}
-*/
+#include "math_utils.h"
 
 template <typename Element>
-Matrix<Element> generate_random_linear_transformation(unsigned int nrows, unsigned int ncolumns) {
-    Matrix<Element> C = Matrix<Element>(nrows, ncolumns); 
-    
-    do {
-        fill_matrix_randomly(C); 
-    } while(!C.has_full_rank());
+MatrixDS<Element> generate_random_linear_transformation(uint16_t rows, uint16_t columns) {
+    MatrixDS<Element> C = MatrixDS<Element>(rows, columns); 
+    fill_matrix_randomly(C);
 
     return C;
 }
 
 template <typename Element>
-Matrix<Element> offVer(Matrix<Element> &M, unsigned int k) {
+MatrixDS<Element> offVer(const MatrixDS<Element> &M, uint16_t k) {
+    MatrixDS<Element> SVK;
 
-    Matrix<Element> C = generate_random_linear_transformation<Element>(k, M.nrows());
+    do {
+        MatrixDS<Element> C = generate_random_linear_transformation<Element>(k, M.nrows());
+        SVK = C * M;
+    } while(!SVK.has_full_rank());
 
-    return C * M;
+    return SVK;
 }
 
 #endif

@@ -26,7 +26,6 @@ class gf16 {
         bool operator!=(const gf16 &b) const;
 
         friend std::ostream& operator<<(std::ostream &s, const gf16 &a);
-
 };
 
 #endif

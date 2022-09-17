@@ -1,6 +1,6 @@
 #include <tinycrypt/sha256.h>
-#include "sha384.h"
-#include "sha512.h"
+#include "SHA/sha384.h"
+#include "SHA/sha512.h"
 
 #include "../include/hash_utils.h"
 #include "../include/uart_utils.h"

@@ -11,7 +11,6 @@ class gf16 {
     public:
 
         gf16(uint8_t v);
-
         gf16();
 
         gf16 operator+(const gf16 &b) const;
@@ -22,7 +21,6 @@ class gf16 {
         operator bool() const;
         
         bool operator==(const gf16 &b) const;
-
         bool operator!=(const gf16 &b) const;
 
         friend std::ostream& operator<<(std::ostream &s, const gf16 &a);

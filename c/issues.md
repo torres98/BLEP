@@ -8,7 +8,7 @@
 **C**
 -use portable placeholder for printf and uint
 
--Fix gf16 for 4 bits
+-Fix rainbow generating 1 byte for gf16
 
 -For getters and setters: you need to consider the ratio between the actual size of the type and the user-specified size
     - maybe use unions and bitfields?

@@ -1,4 +1,4 @@
-#include <stdint.h>
+#include <cstdint>
 
 // GF2
 uint8_t gf2_add(uint8_t a, uint8_t b);

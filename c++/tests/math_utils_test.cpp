@@ -1,4 +1,4 @@
-#include <assert.h>
+#include <cassert>
 
 #include "../include/math_utils.h"
 #include "../include/random_utils.h"
@@ -38,10 +38,10 @@ int main() {
     }
 
     //full rank test
-    assert(!MatrixDS<int>((int*) A1, 2, 3).has_full_rank());
-    assert(!MatrixDS<int>((int*) A2, 3, 3).has_full_rank());
-    assert(!MatrixDS<int>((int*) A3, 3, 3).has_full_rank());
-    assert(MatrixDS<int>((int*) A4, 3, 3).has_full_rank());
+    assert(!MatrixDS<int>((int*) A1, 2, 3).has_full_row_rank());
+    assert(!MatrixDS<int>((int*) A2, 3, 3).has_full_row_rank());
+    assert(!MatrixDS<int>((int*) A3, 3, 3).has_full_row_rank());
+    assert(MatrixDS<int>((int*) A4, 3, 3).has_full_row_rank());
 
     return 0;
 }

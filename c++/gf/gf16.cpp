@@ -15,6 +15,7 @@ gf16::gf16(uint8_t v) {
     this -> v = v & 0xf;
 }
 
+
 gf16::gf16() {
     this -> v = 0;
 }

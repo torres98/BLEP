@@ -13,14 +13,16 @@
 
 #define CLOCK_TO_AVG_MICROSECONDS(clocks, n) (clocks * (1000000.0L / n)) / CLOCKS_PER_SEC
 
-char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk.txt";
-char const *signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature.txt";
+#define STR_IMPL_(x) #x
+#define STR(x) STR_IMPL_(x)
+
+char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk" STR(RAINBOW_VERSION) ".txt";
+char const *signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature" STR(RAINBOW_VERSION) ".txt";
 char const *message_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb";
 
 unsigned char salt[SALT_SIZE];
 
 int main(int argc, char *argv[]) {
-
     if (argc != 4) {
         fprintf(stderr, "Wrong number of arguments.\n");
         return -1;

@@ -1,20 +1,24 @@
 #include "../include/efficient_verification.h"
 
 
-MatrixDS* generate_random_linear_transformation(uint16_t rows, uint16_t columns) {
-    MatrixDS* C = CreateMatrix(rows, columns, false); 
-    
+#define NULL 0
+
+MatrixDS* offVer(const MatrixDS* M, MatrixDS* C, uint16_t k) {
+    MatrixDS *SVK = NULL;
+    bool erase_transformation = (C == NULL);
+
+    if (erase_transformation)
+        C = CreateMatrix(k, nrows(M), false);
+
     do {
+        destroy_matrix(SVK);
+
         fill_matrix_randomly(C); 
-    } while(!has_full_rank(C));
+        SVK = dot_product(C, M);
+    } while(!has_full_row_rank(SVK));
 
-    return C;
-}
-
-MatrixDS* offVer(const MatrixDS* A, uint16_t k) {
-    MatrixDS* C = generate_random_linear_transformation(k, nrows(A));
-    MatrixDS* SVK = dot_product(C, A);
-    destroy_matrix(C);
+    if (erase_transformation)
+        destroy_matrix(C);
 
     return SVK;
 }

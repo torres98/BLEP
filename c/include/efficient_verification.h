@@ -7,6 +7,6 @@
 
 
 MatrixDS* generate_random_linear_transformation(uint16_t rows, uint16_t columns);
-MatrixDS* offVer(const MatrixDS* A, uint16_t k);
+MatrixDS* offVer(const MatrixDS* M, MatrixDS* C, uint16_t k);
 
 #endif

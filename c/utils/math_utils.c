@@ -177,8 +177,8 @@ MatrixDS* dot_product(const MatrixDS *A, const MatrixDS *B) {
     MatrixDS *O = CreateMatrix(n, m, true);
     
     #if ELEM_BIT_SIZE == 4
-        for (uint16_t i = 0; i < n; i++)
-            for (uint16_t j = 0; j < m; j++) {
+        for (uint32_t i = 0; i < n; i++)
+            for (uint32_t j = 0; j < m; j++) {
                 uint32_t offset = i * O -> columns + j;
                 uint32_t index = offset >> 1;
 
@@ -248,7 +248,7 @@ bool are_matrices_equal(const MatrixDS* A, const MatrixDS* B) {
     return memcmp(A -> M, B -> M, MATRIX_BYTE_SIZE(A)) == 0;
 }
 
-bool has_full_rank(const MatrixDS* A) {
+bool has_full_row_rank(const MatrixDS* A) {
     MatrixDS* A_ref = CopyMatrix(A);
 
     for (uint16_t k = 0; k < A_ref -> rows; k++) {
@@ -304,10 +304,12 @@ void print_matrix(const MatrixDS* A) {
 
 //DESTRUCTOR
 void destroy_matrix(MatrixDS* A) {
-    if (!A -> is_memory_static)
-        free_memory(A -> M);
-    
-    free_memory(A);
+    if (A != NULL) {
+        if (!A -> is_memory_static)
+            free_memory(A -> M);
+        
+        free_memory(A);
+    }
 }
 
 /*

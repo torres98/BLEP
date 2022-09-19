@@ -30,7 +30,7 @@ MatrixDS* dot_product(const MatrixDS* A, const MatrixDS* B);
 ELEM_TYPE row_vector_product(const MatrixDS* A, const MatrixDS* v, uint16_t row_index);
 
 bool are_matrices_equal(const MatrixDS* A, const MatrixDS* B);
-bool has_full_rank(const MatrixDS* A);
+bool has_full_row_rank(const MatrixDS* A);
 
 void print_matrix(const MatrixDS* A);
 

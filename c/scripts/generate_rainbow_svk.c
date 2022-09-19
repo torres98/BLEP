@@ -6,8 +6,10 @@
 #include "../include/standard_verification.h"
 //#include "../include/efficient_verification.h"
 
-char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk.txt";
+#define STR_IMPL_(x) #x
+#define STR(x) STR_IMPL_(x)
 
+char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk" STR(RAINBOW_VERSION) ".txt";
 
 int main(int argc, char *argv[]) {
     if (argc != 2) {

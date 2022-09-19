@@ -43,8 +43,7 @@ int main(int argc, char *argv[]) {
     std::cout << "Successfully verified the Rainbow signature." << std::endl;
 
     // for efficient verification
-    MatrixDS<gf> C = generate_random_linear_transformation<gf>(k, PK.nrows());
-    MatrixDS<gf> svk = C * PK;
+    auto [C, svk] = offVer(PK, k);
     VectorDS<gf> u_eff = (VectorDS<gf>) (C * u);
 
     assert(verify_signature(svk, s, u_eff));

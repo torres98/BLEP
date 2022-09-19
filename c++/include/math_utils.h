@@ -86,7 +86,7 @@ class MatrixDS {
             return this -> columns;
         }
 
-        uint16_t size() const {
+        uint32_t size() const {
             return this -> rows * this -> columns;
         }
 
@@ -106,7 +106,7 @@ class MatrixDS {
             (this -> M)[i * this -> columns + j] = v;
         }
 
-        bool has_full_rank() {
+        bool has_full_row_rank() {
             MatrixDS A_ref = MatrixDS(*this);
             uint16_t n = this -> rows, m = this -> columns;
 
@@ -254,7 +254,7 @@ class MatrixDS {
 
                 this -> rows = A.rows;
                 this -> columns = A.columns;
-                this -> M = new Element[this -> size()];
+                this -> M = new Element[A.size()];
             }
 
             std::copy(A.M, A.M + rows * columns, this -> M);

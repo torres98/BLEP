@@ -1,5 +1,6 @@
 #include <cassert>
 #include <chrono>
+#include <tuple>
 
 #include "../include/random_utils.h"
 #include "../include/rainbow.h"
@@ -7,8 +8,11 @@
 #include "../include/efficient_verification.h"
 #include "../include/progressive_verification.h"
 
-char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk.txt";
-char const *signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature.txt";
+#define STR_IMPL_(x) #x
+#define STR(x) STR_IMPL_(x)
+
+char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk" STR(RAINBOW_VERSION) ".txt";
+char const *signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature" STR(RAINBOW_VERSION) ".txt";
 char const *message_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb";
 
 unsigned char salt[Rainbow::SALT_SIZE];
@@ -40,8 +44,7 @@ int main(int argc, char *argv[]) {
     VectorDS<gf> u = Rainbow::get_result_vector(message_path, salt);
 
     // for efficient verification
-    MatrixDS<gf> C = generate_random_linear_transformation<gf>(k, PK.nrows());
-    MatrixDS<gf> svk = C * PK;
+    auto [C, svk] = offVer(PK, k);
     VectorDS<gf> u_eff = (VectorDS<gf>) (C * u);
 
     VectorDS<gf> signature_guess = VectorDS<gf>(s.nrows());

@@ -1,4 +1,4 @@
-# BLEP - a Bare-bone Library for Efficient and Progressive verification
+# BLEP - a Barebone Library for Efficient and Progressive verification
 
 Add export ZEPHYR_BASE=dir of zephyr to the bashrc file
 

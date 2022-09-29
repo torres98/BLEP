@@ -12,7 +12,7 @@
 //MATRIX
 typedef struct MatrixDS MatrixDS;
 
-//Constructor
+//Constructors
 MatrixDS* CreateMatrix(uint16_t rows, uint16_t columns, bool init);
 MatrixDS* CreateMatrixFromArray(ELEM_TYPE* array, uint16_t rows, uint16_t columns, bool copy);
 MatrixDS* CopyMatrix(const MatrixDS* A);
@@ -36,8 +36,5 @@ void print_matrix(const MatrixDS* A);
 
 //Destructor
 void destroy_matrix(MatrixDS* A);
-
-//VECTOR
-//typedef struct VectorDS VectorDS;
 
 #endif

@@ -1,6 +1,6 @@
 sample:
-  description: Test the given board with efficient and progressive verification of Rainbow.
-  name: Rainbow Test
+  description: Benchmark the given board with efficient and progressive verification of Rainbow.
+  name: Rainbow Benchmark
 common:
     tags: introduction
     integration_platforms:

@@ -1,7 +1,7 @@
 #include <string.h> //for memcpy
 
-#include <device.h>
-#include <drivers/uart.h> 
+#include <zephyr/device.h>
+#include <zephyr/drivers/uart.h> 
 
 #include "../include/rainbow.h"
 #include "../include/hash_utils.h"
@@ -83,7 +83,7 @@ MatrixDS* parse_signature(const struct device *uart_dev, unsigned char *salt_buf
     #if RAINBOW_VERSION == 1
         unsigned char byte_read;
 
-        for (unsigned int i = 0; i < n_variables; i+=2) {
+        for (unsigned short i = 0; i < n_variables; i+=2) {
             byte_read = read_byte(uart_dev);
 
             // inverted order
@@ -92,9 +92,19 @@ MatrixDS* parse_signature(const struct device *uart_dev, unsigned char *salt_buf
         }
 
     #else
-        //read_n_bytes_segmented(uart_dev, (unsigned char*) &(s(0)), n_variables);
-        for (unsigned int i = 0; i < n_variables; i++)
+        for (unsigned short i = 0; i < n_variables; i++)
             set(s, i, 0, (gf) read_byte(uart_dev));
+        /*unsigned char buf[32];
+
+        for (unsigned short i = 0; i < n_variables; i+=32) {
+            for (unsigned int j = 0; j < 32 && i+j < n_variables; j++)
+		        buf[j] = read_byte(uart_dev);
+
+            for (unsigned short j = i; j < i+32 && j < n_variables; j++)
+                set(s, j, 0, (gf) buf[j-i]);
+            
+            send_ack(uart_dev);
+        }*/
 
     #endif
 

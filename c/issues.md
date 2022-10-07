@@ -5,6 +5,8 @@
 
 -Including gf16.c from gf256.c could raise a non-definition issue (if a GF16_LOOKUP macro is defined)
 
+-Make fill_matrix a friend function or directly a class method
+
 **C**
 -use portable placeholder for printf and uint
 

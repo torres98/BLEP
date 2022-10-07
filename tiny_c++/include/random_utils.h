@@ -12,13 +12,11 @@ static std::mt19937 rng(sys_rand32_get());
 
 
 template <typename Element>
-void fill_matrix_randomly(MatrixDS<Element> &M, uint8_t min = 0, uint8_t max = 255) {
+void fill_matrix_randomly(MatrixDS<Element> &A, uint8_t min, uint8_t max) {
     std::uniform_int_distribution<uint8_t> element_dist(min, max);
     
-    for (unsigned int i = 0; i < M.nrows(); i++)
-        for (unsigned int j = 0; j < M.ncolumns(); j++)
-            M.set(i, j, Element(element_dist(rng)));
-
+    for (uint32_t i = 0; i < A.size(); i++)
+        A.M[i] = Element(element_dist(rng));
 }
 
 template <typename Element>

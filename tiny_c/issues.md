@@ -1,3 +1,0 @@
--For getters and setters: you need to consider the ratio between the actual size of the type and the user-specified size
-    - maybe use unions and bitfields?
--Including gf16.c from gf256.c could raise a non-definition issue (if a GF16_LOOKUP macro is defined)

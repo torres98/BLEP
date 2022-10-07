@@ -1,12 +1,9 @@
-#include <device.h>
-#include <drivers/uart.h> 
-
 #include "../include/uart_utils.h"
 #include "../include/hash_utils.h"
 #include "../include/math_utils.h"
 
 #ifndef RAINBOW_VERSION
-    #define RAINBOW_VERSION 3
+    #define RAINBOW_VERSION 1
 #endif
 
 #if RAINBOW_VERSION == 1
@@ -37,10 +34,10 @@ namespace Rainbow {
     const unsigned int N = n_variables * (n_variables + 1) / 2;
 
 
-    void get_message_digest(const struct device *uart_dev, unsigned char *output_buffer, unsigned int mlen);
+    void get_message_digest(unsigned char *output_buffer, unsigned int mlen);
     void get_complete_digest(unsigned char *output_buffer, const unsigned char *message_digest, const unsigned char* salt);
-    void get_complete_digest(const struct device *uart_dev, unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen);
+    void get_complete_digest(unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen);
 
-    VectorDS<gf> parse_signature(const struct device *uart_dev, unsigned char *salt_buffer);
+    VectorDS<gf> parse_signature(unsigned char *salt_buffer);
     VectorDS<gf> get_result_vector(const unsigned char* digest);
 };

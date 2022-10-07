@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include <kernel.h>
+#include <zephyr/kernel.h>
 
 #include "tiny/include/math_utils.h"
 #include "tiny/include/progressive_verification.h"

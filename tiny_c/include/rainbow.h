@@ -1,7 +1,7 @@
 #ifndef RAINBOW_H
 #define RAINBOW_H
 
-#include <device.h>
+#include <zephyr/device.h>
 
 #include "../include/math_utils.h"
 

@@ -1,12 +1,14 @@
+SEGMENT_SIZE = 32
+
+
 def uart_wait(serial_device):
     msg = serial_device.readline()
-    assert msg == b'OK\n', f'Received unexpected message ({msg})' #wait for confermation
+    assert msg == b'OK\n', f'Expected OK, but received {msg}' #wait for confermation
 
 def uart_readline(serial_device):
     return serial_device.readline()[:-3].decode('utf-8')
 
 def uart_send_segmented(serial_device, msg):
-    SEGMENT_SIZE = 32
     mlen = len(msg)
 
     for i in range(0, mlen, SEGMENT_SIZE):

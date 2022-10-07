@@ -9,7 +9,6 @@ class gf16 {
         uint8_t v;
 
     public:
-
         gf16(uint8_t v);
         gf16();
 

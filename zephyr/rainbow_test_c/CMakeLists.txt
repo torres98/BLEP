@@ -21,6 +21,7 @@ add_definitions(-DRAINBOW_VERSION=${RAINBOW_VERSION})
 
 add_definitions(-DELEM_TYPE=${GF})
 add_definitions(-DELEM_ADD=${GF}_add)
+add_definitions(-DELEM_SUB=${GF}_add)
 add_definitions(-DELEM_MUL=${GF}_mul)
 
 if(DEFINED ELEM_BIT_SIZE)

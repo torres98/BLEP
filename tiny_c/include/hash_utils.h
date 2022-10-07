@@ -1,7 +1,7 @@
 #ifndef HASH_UTILS_H
 #define HASH_UTILS_H
 
-#include <device.h>
+#include <zephyr/device.h>
 
 
 void sha256_raw_str(unsigned char *raw_str, unsigned char *output_buffer, unsigned long long mlen);

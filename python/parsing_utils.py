@@ -10,10 +10,12 @@ def parse_args(parse_sample_size = False):
         return value
 
     boards_info = {
-        'cc1352r1_launchxl': ('/dev/ttyACM0', ['west', 'flash', '--skip-rebuild']),
-        'nrf5340dk_nrf5340_cpuapp': ('/dev/ttyACM2', ['west', 'flash', '--recover', '--skip-rebuild']),
-        'arduino_due': ('/dev/ttyACM0', ['west', 'flash', '--skip-rebuild']),
-        'adafruit_itsybitsy_m4_express': ('/dev/ttyACM0', ['west', 'flash', '--skip-rebuild'])
+        'cc1352r1_launchxl': ['west', 'flash', '--skip-rebuild'],
+        'nrf5340dk_nrf5340_cpuapp': ['west', 'flash', '--recover', '--skip-rebuild'],
+        'arduino_due': ['west', 'flash', '--skip-rebuild'],
+        'adafruit_itsybitsy_m4_express': ['west', 'flash', '--skip-rebuild'],
+        'rpi_pico': ['cp', 'build/zephyr/zephyr.uf2', '/media/torres/RPI-RP2'],
+        'esp32': ['west', 'flash', '--skip-rebuild']
     }
 
     n_polynomials = {
@@ -31,7 +33,7 @@ def parse_args(parse_sample_size = False):
         parser.add_argument('-s', '--sample-size', default=100, type=positive_int)
 
     parser.add_argument('-b', '--board', choices=boards_info.keys(), type=str)
-    parser.add_argument('-l', '--lookup-level', choices=(0, 1, 2), default=0, type=int)
+    parser.add_argument('-l', '--lookup-level', choices=('0', '1', '2', '1r', '2r'), default='0', type=str)
     parser.add_argument('--skip-build', action='store_true')
 
     args = parser.parse_args()
@@ -48,8 +50,7 @@ def parse_args(parse_sample_size = False):
         'PROGRESSIVE_STEPS': args.progressive_steps,
         'LOOKUP_LEVEL': args.lookup_level,
         'BOARD': args.board,
-        'TTY_DEVICE': boards_info[args.board][0],
-        'FLASH_CMD': boards_info[args.board][1],
+        'FLASH_CMD': boards_info[args.board],
         'SKIP_BUILD': args.skip_build
     }
 

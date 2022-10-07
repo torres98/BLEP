@@ -4,10 +4,10 @@
 
 #if !(defined GF16_LOOKUP) || GF16_LOOKUP == 0
     #include "gf_operations.cpp"
-#elif GF16_LOOKUP == 1 || GF16_LOOKUP == 2
+#elif GF16_LOOKUP == 1 || GF16_LOOKUP == 2 || GF16_LOOKUP == 3 || GF16_LOOKUP == 4
     #include "gf16_lookup.h"
 #else
-    #error "Lookup level not recognized (choose between 0, 1 and 2)"
+    #error "Lookup level not recognized (choose between 0, 1, 2, 3 and 4)"
 #endif
 
 
@@ -38,7 +38,7 @@ gf16::gf16() {
         return gf16(gf16_mul(this -> v, b.v));
     }
 
-#elif GF16_LOOKUP == 1
+#elif GF16_LOOKUP == 1 || GF16_LOOKUP == 2
     #define get_add_index(i, j) ((i*(31 - i)) / 2) + (j - i - 1)
     #define get_mul_index(i, j) 15*(i-1) + ((i*(3 - i)) / 2) + (j - i) - 1
 

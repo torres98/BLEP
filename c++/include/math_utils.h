@@ -10,6 +10,12 @@ template <typename Element>
 class VectorDS;
 
 template <typename Element>
+class MatrixDS;
+
+template <typename Element>
+void fill_matrix_randomly(MatrixDS<Element> &A, uint8_t min = 0, uint8_t max = 255, uint32_t seed = 0);
+
+template <typename Element>
 class MatrixDS {
     protected:
         Element* M;
@@ -20,7 +26,7 @@ class MatrixDS {
     public:
         
         /**
-         * Create a MatrixDS object with specified sizes .
+         * Create a MatrixDS object with specified sizes.
          *
          * @param rows number of rows.
          * @param columns number of columns.
@@ -44,7 +50,7 @@ class MatrixDS {
          *
          * @param A pointer to static array.
          */
-        MatrixDS(Element* A, unsigned int rows, unsigned int columns) {
+        MatrixDS(Element* A, uint16_t rows, uint16_t columns) {
             this -> rows = rows;
             this -> columns = columns;
             this -> M = A;
@@ -53,7 +59,7 @@ class MatrixDS {
         }
 
         /**
-         * Create a MatrixDS object from another one. 
+         * Create a MatrixDS object copying another one. 
          *
          * @param A MatrixDS object to be copied.
          */
@@ -78,18 +84,43 @@ class MatrixDS {
             this -> is_memory_static = false;
         }
 
+        /**
+         * Returns the number of rows of the MatrixDS object.
+         * 
+         * @return Number of columns of the MatrixDS object.
+         */
         uint16_t nrows() const {
             return this -> rows;
         }
 
+        /**
+         * Returns the number of columns of the MatrixDS object.
+         * 
+         * @return Number of rows of the MatrixDS object.
+         */
         uint16_t ncolumns() const {
             return this -> columns;
         }
 
+        /**
+         * Returns the number of elements of the MatrixDS object.
+         * 
+         * @return Number of elements of the MatrixDS object.
+         */
         uint32_t size() const {
             return this -> rows * this -> columns;
         }
 
+        /**
+         * Set the value of the element in position of a MatrixDS object. 
+         *
+         * @param i Row index.
+         * @param j Column index
+         * @param v Value.
+         * 
+         * @throws std::invalid_argument if the row or column index exceed the MatrixDS object
+         *         rows.
+         */
         void set(uint16_t i, uint16_t j, const Element& v) {
             if (i >= this -> rows) {
                 std::ostringstream error_log;
@@ -106,7 +137,12 @@ class MatrixDS {
             (this -> M)[i * this -> columns + j] = v;
         }
 
-        bool has_full_row_rank() {
+        /**
+         * Check if the MatrixDS object has full row rank. 
+         * 
+         * @return true if the MatrixDS object has full row rank, false otherwise.
+         */
+        bool has_full_row_rank() const {
             MatrixDS A_ref = MatrixDS(*this);
             uint16_t n = this -> rows, m = this -> columns;
 
@@ -147,6 +183,17 @@ class MatrixDS {
             return true;
         }
         
+        /**
+         * Compute the inner product between a row of the MatrixDS object and the VectorDS object. 
+         * 
+         * @param row_index Index of a MatrixDS row.
+         * @param v VectorDS object.
+         * 
+         * @return The result of the inner product.
+         * 
+         * @throws std::invalid_argument Thrown if the number of columns of the MatrixDS
+         *         object is different from the number of rows of the VectorDS object.
+         */
         Element row_vector_product(uint16_t row_index, const VectorDS<Element> &v) const {
             uint16_t vector_size = v.rows;
 
@@ -218,7 +265,7 @@ class MatrixDS {
          * @return A new MatrixDS object containing the result of the product.
          * 
          * @throws std::invalid_argument Thrown if the number of columns of the first
-         *     matrix is different from the number of rows of the second one.
+         *         matrix is different from the number of rows of the second one.
          */
         MatrixDS operator*(const MatrixDS &A) const {
             if (this -> columns != A.rows) {
@@ -262,17 +309,17 @@ class MatrixDS {
             return *this;
         }
 
-        operator bool() {
+        operator bool() const {
             return std::any_of(this -> M, this -> M + this -> size(), [](Element x) { return bool(x); });
         }
 
         /**
-         * Check that the two MatrixDS object have the same size and content.
+         * Check that two MatrixDS object have the same content.
          * 
-         * @param A MatrixDS object to compare 
+         * @param A MatrixDS object to compare.
          * 
-         * @return true if the two MatrixDS objects have the same size and content, false
-         *     otherwise.
+         * @return true if the two MatrixDS objects have the same content, false
+         *         otherwise.
          */
         bool operator==(const MatrixDS &A) const {
             if (this -> rows != A.rows || this -> columns != A.columns)
@@ -286,13 +333,15 @@ class MatrixDS {
                 delete[] this -> M;
         }
 
+        template <typename Elem>
+        friend void fill_matrix_randomly(MatrixDS<Elem> &A, uint8_t min, uint8_t max, uint32_t seed);
+
         friend std::ostream& operator<<(std::ostream &s, const MatrixDS &A) {
             uint16_t n = A.rows, m = A.columns;
 
             if (n == 0 || m == 0) {
                 s << "[]" << std::endl;
             } else {
-
                 for (uint16_t i = 0; i < n; i++) {
                     s << "[";
 
@@ -301,7 +350,6 @@ class MatrixDS {
 
                     s << A.M[(i+1)*m - 1] << "]" << std::endl;
                 }
-
             }
 
             return s;
@@ -346,7 +394,6 @@ class VectorDS: public MatrixDS<Element> {
         }
 
         Element operator*(const VectorDS &v) const {
-            
             if (this -> size() != v.size()) {
                 std::ostringstream error_log;
                 error_log << "Incompatible sizes for inner product between vectors of size " << this -> size() << " and " << v.size();
@@ -362,7 +409,6 @@ class VectorDS: public MatrixDS<Element> {
         }
 
         friend std::ostream& operator<<(std::ostream &s, const VectorDS &v) {
-
             uint16_t n = v.size();
 
             s << "[";
@@ -377,7 +423,6 @@ class VectorDS: public MatrixDS<Element> {
             s << "]" << std::endl;
 
             return s;
-
         }
 };
 

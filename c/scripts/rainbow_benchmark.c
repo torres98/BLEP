@@ -47,8 +47,8 @@ int main(int argc, char *argv[]) {
     MatrixDS* u = get_result_vector(message_path, salt);
     
     // for efficient verification
-    MatrixDS *C = generate_random_linear_transformation(k, nrows(PK));
-    MatrixDS *svk = dot_product(C, PK);
+    MatrixDS *C = CreateMatrix(k, nrows(PK), false);
+    MatrixDS *svk = offVer(PK, C, k);
     MatrixDS *u_eff = dot_product(C, u);
 
     MatrixDS* signature_guess = CreateMatrix(nrows(s), 1, false);

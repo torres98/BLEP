@@ -5,10 +5,10 @@
 
 #if !(defined GF256_LOOKUP) || GF256_LOOKUP == 0
     #include "gf16.cpp"   
-#elif GF256_LOOKUP == 1 || GF256_LOOKUP == 2
+#elif GF256_LOOKUP == 1 || GF256_LOOKUP == 2 || GF256_LOOKUP == 3 || GF256_LOOKUP == 4
     #include "gf256_lookup.h"
 #else
-    #error "Lookup level not recognized (choose between 0, 1 and 2)"
+    #error "Lookup level not recognized (choose between 0, 1, 2, 3 and 4)"
 #endif
 
 
@@ -38,7 +38,7 @@ gf256::gf256() {
         return gf256(gf256_mul(this -> v, b.v));
     }
 
-#elif GF256_LOOKUP == 1
+#elif GF256_LOOKUP == 1 || GF256_LOOKUP == 2
     #define get_add_index(i, j) ((i*(511 - i)) / 2) + (j - i - 1)
     #define get_mul_index(i, j) 255*(i-1) + ((i*(3 - i)) / 2) + (j - i) - 1
 

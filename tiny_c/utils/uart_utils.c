@@ -1,9 +1,9 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <zephyr.h>
-#include <device.h>
-#include <drivers/uart.h>
+#include <zephyr/zephyr.h>
+#include <zephyr/device.h>
+#include <zephyr/drivers/uart.h>
 
 #include "../include/uart_utils.h"
 
@@ -59,7 +59,7 @@ uint32_t read_uint32(const struct device *dev) {
     uint32_t value = 0;
 	send_ok(dev);
 
-    for (unsigned short i = 0; i < 12; i+=3)
+    for (unsigned short i = 0; i < 32; i+=8)
 		value |= read_byte(dev) << i;
 	
 	send_ack(dev);

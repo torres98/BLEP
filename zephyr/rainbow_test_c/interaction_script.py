@@ -1,3 +1,4 @@
+from time import sleep
 import serial
 import subprocess
 
@@ -6,11 +7,6 @@ from effprog.uart_utils import *
 from effprog.parsing_utils import parse_args
 
 SHA_CHUNK_SIZE = 32678
-
-PK_PATH = '/home/torres/Desktop/Thesis/verification_implementation/tmp/pk.txt'
-MSG_PATH = '/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb'
-SIG_PATH = '/home/torres/Desktop/Thesis/verification_implementation/tmp/signature.txt'
-
 TTY_PORT = 115200
 
 shell_args = parse_args()
@@ -32,6 +28,10 @@ else:
     from effprog.schemes.gf.gf256 import gf256 as gf
 
     q = 256
+
+PK_PATH = f'/home/torres/Desktop/Thesis/verification_implementation/tmp/pk{shell_args["RAINBOW_VERSION"]}.txt'
+SIG_PATH = f'/home/torres/Desktop/Thesis/verification_implementation/tmp/signature{shell_args["RAINBOW_VERSION"]}.txt'
+MSG_PATH = '/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb'
 
 
 #Generate random transformation and corresponding svk
@@ -105,14 +105,17 @@ if not shell_args['SKIP_BUILD']:
         exit(-1)
 
     print('DONE')
+    print(f'Memory region{build_output[0].decode("utf-8").split("Memory region")[1]}')
 
 subprocess.check_call(shell_args['FLASH_CMD'])
+
+sleep(0.1)
 
 #LAUNCH APPLICATION
 with serial.Serial(shell_args['TTY_DEVICE'], TTY_PORT) as serial_device:
     
     print()
-    uart_readline(serial_device)
+    print(uart_readline(serial_device))
 
     uart_send_int(serial_device, shell_args['PROGRESSIVE_STEPS'])
 

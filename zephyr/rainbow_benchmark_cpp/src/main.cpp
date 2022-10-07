@@ -1,7 +1,7 @@
 #include <iostream>
 #include <iomanip>
 
-#include <kernel.h>
+#include <zephyr/kernel.h>
 
 #include "tiny/include/math_utils.h"
 #include "tiny/include/progressive_verification.h"
@@ -23,19 +23,20 @@ int main() {
     uint32_t result_vector_time = 0, eff_verification_time = 0, effprog_verification_time = 0;
 
     //Receive svk_nrows, progressive_steps and sample_size
-    uint16_t PROGRESSIVE_STEPS = read_uint32(uart_dev), SAMPLE_SIZE = read_uint32(uart_dev);
+    uint16_t PROGRESSIVE_STEPS = read_uint32();
+    uint16_t SAMPLE_SIZE = read_uint32();
 
     // read message length (4 bytes) 
-    uint32_t mlen = read_uint32(uart_dev);
+    uint32_t mlen = read_uint32();
     
-    Rainbow::get_message_digest(uart_dev, message_digest, mlen);
+    Rainbow::get_message_digest(message_digest, mlen);
 
     // load the linear transformation and the short verification key as a Matrix objects
     MatrixDS<gf> SVK = MatrixDS<gf>((gf*) short_private_key, SVK_NROWS, Rainbow::N);
     MatrixDS<gf> C = MatrixDS<gf>((gf*) private_transformation, SVK_NROWS, Rainbow::n_polynomials);
 
-    for (unsigned int i = 0; i < SAMPLE_SIZE; i++) {
-        VectorDS<gf> s = Rainbow::parse_signature(uart_dev, salt);
+    for (uint16_t i = 0; i < SAMPLE_SIZE; i++) {
+        VectorDS<gf> s = Rainbow::parse_signature(salt);
 
         // Compute resulting vector
         Rainbow::get_complete_digest(final_digest, message_digest, salt);

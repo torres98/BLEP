@@ -6,11 +6,6 @@ from effprog.uart_utils import *
 from effprog.parsing_utils import parse_args
 
 SHA_CHUNK_SIZE = 32678
-
-PK_PATH = '/home/torres/Desktop/Thesis/verification_implementation/tmp/pk.txt'
-MSG_PATH = '/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb'
-SIG_PATH = '/home/torres/Desktop/Thesis/verification_implementation/tmp/signature.txt'
-
 TTY_PORT = 115200
 
 shell_args = parse_args()
@@ -32,6 +27,10 @@ else:
     from effprog.schemes.gf.gf256 import gf256 as gf
 
     q = 256
+
+PK_PATH = f'/home/torres/Desktop/Thesis/verification_implementation/tmp/pk{shell_args["RAINBOW_VERSION"]}.txt'
+SIG_PATH = f'/home/torres/Desktop/Thesis/verification_implementation/tmp/signature{shell_args["RAINBOW_VERSION"]}.txt'
+MSG_PATH = '/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb'
 
 
 #Generate random transformation and corresponding svk

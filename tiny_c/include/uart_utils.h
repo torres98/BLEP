@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#include <device.h>
+#include <zephyr/device.h>
 
 extern const struct device *uart_dev;
 

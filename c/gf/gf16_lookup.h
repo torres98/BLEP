@@ -1,5 +1,9 @@
-#if GF16_LOOKUP == 2
-    const unsigned char gf16_add_lookup[16][16] = {
+#if GF16_LOOKUP == 3 || GF16_LOOKUP == 4
+    #if GF16_LOOKUP == 4
+        unsigned char gf16_add_lookup[16][16] = {
+    #else
+        const unsigned char gf16_add_lookup[16][16] = {
+    #endif
         {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
         {1, 0, 3, 2, 5, 4, 7, 6, 9, 8, 11, 10, 13, 12, 15, 14},
         {2, 3, 0, 1, 6, 7, 4, 5, 10, 11, 8, 9, 14, 15, 12, 13},
@@ -18,7 +22,11 @@
         {15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0}
     };
 
-    const unsigned char gf16_mul_lookup[16][16] = {
+    #if GF16_LOOKUP == 4
+        unsigned char gf16_mul_lookup[16][16] = {
+    #else
+        const unsigned char gf16_mul_lookup[16][16] = {
+    #endif
         {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
         {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15},
         {0, 2, 3, 1, 8, 10, 11, 9, 12, 14, 15, 13, 4, 6, 7, 5},
@@ -37,8 +45,12 @@
         {0, 15, 5, 10, 1, 14, 4, 11, 2, 13, 7, 8, 3, 12, 6, 9}
     };
 
-#elif GF16_LOOKUP == 1
-    const unsigned char gf16_add_lookup[] = {
+#elif GF16_LOOKUP == 1 || GF16_LOOKUP == 2
+    #if GF16_LOOKUP == 2
+        unsigned char gf16_add_lookup[] = {
+    #else
+        const unsigned char gf16_add_lookup[] = {
+    #endif
         1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
             3,  2,  5,  4,  7,  6,  9,  8, 11, 10, 13, 12, 15, 14, 
                 1,  6,  7,  4,  5, 10, 11,  8,  9, 14, 15, 12, 13, 
@@ -56,7 +68,11 @@
                                                                 1                                                             
     };
 
-    const unsigned char gf16_mul_lookup[] = {
+    #if GF16_LOOKUP == 2
+        unsigned char gf16_mul_lookup[] = {
+    #else
+        const unsigned char gf16_mul_lookup[] = {
+    #endif
         1,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, 14, 15, 
             3,  1,  8, 10, 11,  9, 12, 14, 15, 13,  4,  6,  7,  5, 
                 2, 12, 15, 13, 14,  4,  7,  5,  6,  8, 11,  9, 10, 

@@ -1,5 +1,5 @@
-#include <device.h>
-#include <drivers/uart.h> 
+#include <zephyr/device.h>
+#include <zephyr/drivers/uart.h> 
 
 #include "../include/rainbow.h"
 
@@ -30,10 +30,10 @@
 using Rainbow::gf;
 
 
-void Rainbow::get_message_digest(const struct device *uart_dev, unsigned char *output_buffer, unsigned int mlen) {
-    send_ok(uart_dev); //maybe move inside function
+void Rainbow::get_message_digest(unsigned char *output_buffer, unsigned int mlen) {
+    send_ok(); //maybe move inside function
 
-    HASH_FROM_DEVICE(uart_dev, output_buffer, mlen);
+    HASH_FROM_DEVICE(output_buffer, mlen);
 }
 
 void Rainbow::get_complete_digest(unsigned char *output_buffer, const unsigned char *message_digest, const unsigned char* salt) {
@@ -51,10 +51,10 @@ void Rainbow::get_complete_digest(unsigned char *output_buffer, const unsigned c
     #endif
 }
 
-void Rainbow::get_complete_digest(const struct device *uart_dev, unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen) {
+void Rainbow::get_complete_digest(unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen) {
     unsigned char temp_buffer[SHA_DIGEST_SIZE + SALT_SIZE];
 
-    get_message_digest(uart_dev, temp_buffer, mlen);
+    get_message_digest(temp_buffer, mlen);
     
     // copy the salt at the end of the array (digest = H(m) || salt)
     memcpy(temp_buffer + SHA_DIGEST_SIZE, salt, SALT_SIZE);
@@ -67,30 +67,59 @@ void Rainbow::get_complete_digest(const struct device *uart_dev, unsigned char *
     #endif
 }
 
-VectorDS<gf> Rainbow::parse_signature(const struct device *uart_dev, unsigned char *salt_buffer) {
+VectorDS<gf> Rainbow::parse_signature(unsigned char *salt_buffer) {
     VectorDS<gf> s = VectorDS<gf>(N);
 
-    send_ok(uart_dev);
+    send_ok();
 
     #if RAINBOW_VERSION == 1
-        for (unsigned int i = 0; i < n_variables; i+=2) {
+        for (unsigned short i = 0; i < n_variables/(2*SEGMENT_SIZE); i++) {
+            receive_segment();
+
+            // inverted order
+            for (unsigned short h = 0; h < SEGMENT_SIZE; h++) {
+                s.set(2*h, gf(uart_rx_buffer[h]));
+                s.set(2*h + 1, gf(uart_rx_buffer[h] >> 4));
+            }
+        }
+
+        receive_n_bytes((n_variables % SEGMENT_SIZE) / 2);
+
+        for (unsigned short h = 0; h < (n_variables % SEGMENT_SIZE) / 2; h++) {
+            s.set(2*h, gf(uart_rx_buffer[h]));
+            s.set(2*h + 1, gf(uart_rx_buffer[h] >> 4));
+        }
+
+        /*for (unsigned int i = 0; i < n_variables; i+=2) {
             unsigned char byte_read = read_byte(uart_dev);
 
             // inverted order
             s.set(i, gf(byte_read));
             s.set(i+1, gf(byte_read >> 4));
-        }
+        }*/
 
     #else
-        //read_n_bytes_segmented(uart_dev, (unsigned char*) &(s(0)), n_variables);
-        for (unsigned int i = 0; i < n_variables; i++)
-            s.set(i, gf(read_byte(uart_dev)));
+        for (unsigned short i = 0; i < n_variables/SEGMENT_SIZE; i++) {
+            receive_segment();
+
+            // inverted order
+            for (unsigned short h = 0; h < SEGMENT_SIZE; h++)
+                s.set(h, gf(uart_rx_buffer[h]));
+        }
+    
+        receive_n_bytes(n_variables % SEGMENT_SIZE);
+
+        for (unsigned short h = 0; h < (n_variables % SEGMENT_SIZE); h++)
+            s.set(h, gf(uart_rx_buffer[h]));
+
+        /*for (unsigned int i = 0; i < n_variables; i++)
+            s.set(i, gf(read_byte()));*/
     
     #endif
 
     // read salt
-    read_n_bytes(uart_dev, salt_buffer, SALT_SIZE);
-    
+    read_n_bytes(salt_buffer, SALT_SIZE);
+
     // compute the quadratic products
     unsigned int h = N - 1;
 

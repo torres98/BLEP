@@ -17,8 +17,8 @@ using Rainbow::gf;
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        fprintf(stderr, "Wrong number of arguments.\n");
-        exit(-1);
+        std::cerr << "Wrong number of arguments." << std::endl;
+        return -1;
     }
 
     uint16_t k = strtoul(argv[1], NULL, 10);
@@ -44,7 +44,7 @@ int main(int argc, char *argv[]) {
 
     // for efficient verification
     auto [C, svk] = offVer(PK, k);
-    VectorDS<gf> u_eff = (VectorDS<gf>) (C * u);
+    VectorDS<gf> u_eff = C * u;
 
     assert(verify_signature(svk, s, u_eff));
     std::cout << "Efficiently verified the Rainbow signature." << std::endl;

@@ -34,10 +34,10 @@ int main(int argc, char *argv[]) {
 
     unsigned char salt[Rainbow::SALT_SIZE];
 
-    MatrixDS<gf> PK = Rainbow::parse_public_key(pk_path);
-    VectorDS<gf> s = Rainbow::parse_signature(signature_path, salt);
+    MatrixDS<gf> PK = Rainbow::get_public_key_from_file(pk_path);
+    VectorDS<gf> s = Rainbow::get_signature_from_file(signature_path, salt);
 
-    VectorDS<gf> u = Rainbow::get_result_vector(message_path, salt);
+    VectorDS<gf> u = Rainbow::get_result_vector_from_file(message_path, salt);
 
     assert(verify_signature(PK, s, u));
     std::cout << "Successfully verified the Rainbow signature." << std::endl;

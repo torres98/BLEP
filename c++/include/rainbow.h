@@ -33,10 +33,15 @@ namespace Rainbow {
     const unsigned short n_variables = v1 + o1 + o2, n_polynomials = n_variables - v1, SALT_SIZE = 16;
     const unsigned int N = n_variables * (n_variables + 1) / 2;
 
-    void get_message_digest(const char* message_path, unsigned char *output_buffer);
-    void get_complete_digest(const char* message_path, const unsigned char* salt, unsigned char *output_buffer);
+    void get_message_digest(const unsigned char* message, size_t mlen, const unsigned char* salt, unsigned char *output_buffer);
+    void get_message_digest_from_file(const char* message_path, const unsigned char* salt, unsigned char *output_buffer);
 
-    MatrixDS<gf> parse_public_key(const char *pk_path);
-    VectorDS<gf> parse_signature(const char* signature_path, unsigned char *salt_buffer);
-    VectorDS<gf> get_result_vector(const char* message_path, const unsigned char* salt);
+    MatrixDS<gf> get_public_key(const unsigned char *pk);
+    MatrixDS<gf> get_public_key_from_file(const char *pk_path);
+
+    VectorDS<gf> get_signature(const unsigned char* signature);
+    VectorDS<gf> get_signature_from_file(const char* signature_path, unsigned char *salt_buffer);
+
+    VectorDS<gf> get_result_vector(const unsigned char* message, size_t mlen, const unsigned char* salt);
+    VectorDS<gf> get_result_vector_from_file(const char* message_path, const unsigned char* salt);
 };

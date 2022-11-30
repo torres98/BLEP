@@ -23,7 +23,6 @@ class gf256 {
         operator bool() const;
         
         bool operator==(const gf256 &b) const;
-
         bool operator!=(const gf256 &b) const;
 
         friend std::ostream& operator<<(std::ostream &s, const gf256 &a);

@@ -148,43 +148,50 @@ class MatrixDS {
          * @return true if the MatrixDS object has full row rank, false otherwise.
          */
         bool has_full_row_rank() const {
-            MatrixDS A_ref = MatrixDS(*this);
             uint16_t n = this -> rows, m = this -> columns;
+            Element* ref = new Element[n * n];
+            
+            // copy only the square part of the input matrix
+            for (uint16_t i = 0; i < n; i++)
+                std::copy(this -> M + i * m, this -> M + i * m + n, ref + i * n);
 
             for (uint16_t k = 0; k < n; k++) {
                 // Initialize pivot row index and pivot value
-                Element pivot = A_ref.M[m * k + k];
+                Element pivot = ref[n * k + k];
                 uint16_t pivot_row = k;
                 
                 // look for maximum (absolute) pivot value on column k (after row k)
                 for (uint16_t i = k+1; i < n; i++)
-                    if (A_ref.M[m * i + k] > pivot) //should be abs
-                        pivot = A_ref.M[m * i + k], pivot_row = i;
+                    if (ref[n * i + k] > pivot) //fix: should be abs
+                        pivot = ref[n * i + k], pivot_row = i;
         
                 // if a principal diagonal element is zero, then the
                 // matrix is singular, so it can't have full rank
-                if (!A_ref.M[m * k + pivot_row])
+                if (!ref[n * k + pivot_row]) {
+                    delete[] ref;
                     return false;
+                }
         
                 // Swap the pivot row with current row
                 if (pivot_row != k) {
                     std::swap_ranges(
-                        A_ref.M + pivot_row * m,
-                        A_ref.M + (pivot_row + 1) * m,
-                        A_ref.M + k * m
+                        ref + pivot_row * n,
+                        ref + (pivot_row + 1) * n,
+                        ref + k * n
                     );
                 }
 
                 for (uint16_t i = k+1; i < n; i++) {
                     // current_row = pivot * current_row - current_row[0] * pivot_row
-                    for (uint16_t j = k+1; j < m; j++)
-                        A_ref.M[m * i + j] = pivot * A_ref.M[m * i + j] - A_ref.M[m * i + k] * A_ref.M[m * k + j];
+                    for (uint16_t j = k+1; j < n; j++)
+                        ref[n * i + j] = pivot * ref[n * i + j] - ref[n * i + k] * ref[n * k + j];
 
                     // set to zero the current column value
-                    A_ref.M[m * i + k] = Element();
+                    ref[n * i + k] = Element();
                 }
             }
             
+            delete[] ref;
             return true;
         }
         

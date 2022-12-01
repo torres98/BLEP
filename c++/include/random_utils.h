@@ -9,6 +9,12 @@
 std::random_device rd;
 static std::mt19937 rng(rd());
 
+void fill_buffer_randomly(unsigned char* buffer, size_t buf_size) {
+    FILE* rand_file = fopen("/dev/random", "r");
+    fread(buffer, sizeof(unsigned char), buf_size, rand_file);
+    fclose(rand_file);
+}
+
 template <typename Element>
 void fill_matrix_randomly(MatrixDS<Element> &A, uint8_t min, uint8_t max, uint32_t seed) {
 

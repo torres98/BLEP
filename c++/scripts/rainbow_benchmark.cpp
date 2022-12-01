@@ -8,6 +8,12 @@
 #include "../include/efficient_verification.h"
 #include "../include/progressive_verification.h"
 
+#if RAINBOW_VERSION == 1
+    #define SIG_SIZE Rainbow::n_variables / 2
+#else
+    #define SIG_SIZE Rainbow::n_variables
+#endif
+
 #define STR_IMPL_(x) #x
 #define STR(x) STR_IMPL_(x)
 
@@ -38,25 +44,27 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    MatrixDS<gf> PK = Rainbow::parse_public_key(pk_path);
-    VectorDS<gf> s = Rainbow::parse_signature(signature_path, salt);
+    MatrixDS<gf> PK = Rainbow::get_public_key_from_file(pk_path);
+    auto [C, SVK] = offVer(PK, k);
 
-    VectorDS<gf> u = Rainbow::get_result_vector(message_path, salt);
-
-    // for efficient verification
-    auto [C, svk] = offVer(PK, k);
-    VectorDS<gf> u_eff = (VectorDS<gf>) (C * u);
-
-    VectorDS<gf> signature_guess = VectorDS<gf>(s.nrows());
     uint32_t eff_error_count = 0, prog_error_count = 0, effprog_error_count = 0;
-
     long double eff_time = .0, prog_time = .0, effprog_time = .0;
 
     for (uint32_t i = 0; i < SAMPLE_SIZE; i++) {
-        fill_matrix_randomly(signature_guess, 0, Rainbow::q - 1);
+        //fill signature randomly
+        unsigned char signature_raw_str[SIG_SIZE];
+        fill_buffer_randomly(signature_raw_str, SIG_SIZE);
+        VectorDS<gf> signature_guess = Rainbow::get_signature(signature_raw_str);
+
+        // fill salt randomly
+        unsigned char salt[Rainbow::SALT_SIZE];
+        fill_buffer_randomly(salt, Rainbow::SALT_SIZE);
+        VectorDS<gf> u = Rainbow::get_result_vector_from_file(message_path, salt);
+
+        VectorDS<gf> u_eff = C * u;
         
         auto starting_time = high_resolution_clock::now();
-        bool eff_verification_result = verify_signature(svk, signature_guess, u_eff);
+        bool eff_verification_result = verify_signature(SVK, signature_guess, u_eff);
         eff_time += duration<long double, std::micro>(high_resolution_clock::now() - starting_time).count();
 
         starting_time = high_resolution_clock::now();
@@ -64,7 +72,7 @@ int main(int argc, char *argv[]) {
         prog_time += duration<long double, std::micro>(high_resolution_clock::now() - starting_time).count();
 
         starting_time = high_resolution_clock::now();
-        bool effprog_verification_result = progVer(svk, signature_guess, u_eff, t);
+        bool effprog_verification_result = progVer(SVK, signature_guess, u_eff, t);
         effprog_time += duration<long double, std::micro>(high_resolution_clock::now() - starting_time).count();
 
         if (eff_verification_result || prog_verification_result || effprog_verification_result) {

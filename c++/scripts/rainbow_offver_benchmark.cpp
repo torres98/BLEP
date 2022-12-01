@@ -33,7 +33,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    MatrixDS<gf> PK = Rainbow::parse_public_key(pk_path);
+    MatrixDS<gf> PK = Rainbow::get_public_key_from_file(pk_path);
     long double offver_time = .0;
 
     for (uint32_t i = 0; i < SAMPLE_SIZE; i++) {

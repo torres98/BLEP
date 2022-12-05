@@ -8,7 +8,7 @@
 #define hex_to_int(chr) (chr >= 'a') ? (chr - 'a' + 10) : (chr - '0')
 
 #if RAINBOW_VERSION == 1
-    #define HASH_RAW_STR sha256_string
+    #define HASH_STRING sha256_string
     #define HASH_FILE sha256_file
 
     #define SHA_DIGEST_SIZE 32
@@ -17,7 +17,7 @@
     const unsigned short element_hex_size = 1;
 
 #elif RAINBOW_VERSION == 2
-    #define HASH_RAW_STR sha384_string
+    #define HASH_STRING sha384_string
     #define HASH_FILE sha384_file
 
     #define SHA_DIGEST_SIZE 48
@@ -26,7 +26,7 @@
     const unsigned short element_hex_size = 2;
 
 #elif RAINBOW_VERSION == 3
-    #define HASH_RAW_STR sha512_string
+    #define HASH_STRING sha512_string
     #define HASH_FILE sha512_file
 
     #define SHA_DIGEST_SIZE 64
@@ -45,12 +45,12 @@ void finish_digest(unsigned char message_digest[SHA_DIGEST_SIZE + SALT_SIZE], co
     memcpy(message_digest + SHA_DIGEST_SIZE, salt, SALT_SIZE);
 
     // temp_buffer <- H( H(msg) || salt )
-    HASH_RAW_STR(message_digest, output_buffer, SHA_DIGEST_SIZE + SALT_SIZE);
+    HASH_STRING(message_digest, SHA_DIGEST_SIZE + SALT_SIZE, output_buffer);
 
     // pad the digest with its digest (digestception!)
     // digest = H( H(m) || salt ) || H( H( H(m) || salt ) )
     #if RAINBOW_VERSION != 1
-        HASH_RAW_STR(output_buffer, message_digest, SHA_DIGEST_SIZE);
+        HASH_STRING(output_buffer, SHA_DIGEST_SIZE, message_digest);
         memcpy(output_buffer + SHA_DIGEST_SIZE, message_digest, n_polynomials - SHA_DIGEST_SIZE);
     #endif
 }
@@ -59,7 +59,7 @@ void Rainbow::get_message_digest(const unsigned char* message, size_t mlen, cons
     unsigned char temp_buffer[SHA_DIGEST_SIZE + SALT_SIZE];
 
     // temp_buffer <- H(msg)
-    HASH_RAW_STR(message, temp_buffer, mlen);
+    HASH_STRING(message, mlen, temp_buffer);
 
     finish_digest(temp_buffer, salt, output_buffer);
 }

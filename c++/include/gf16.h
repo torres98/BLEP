@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <ostream>
 
+
 class gf16 {
     private:
         uint8_t v;

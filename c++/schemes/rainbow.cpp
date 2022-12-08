@@ -5,16 +5,12 @@
 #include "../include/hash_utils.h"
 #include "../include/math_utils.h"
 
-#define hex_to_int(chr) (chr >= 'a') ? (chr - 'a' + 10) : (chr - '0')
-
 #if RAINBOW_VERSION == 1
     #define HASH_STRING sha256_string
     #define HASH_FILE sha256_file
 
     #define SHA_DIGEST_SIZE 32
     #define FINAL_DIGEST_SIZE 32
-
-    const unsigned short element_hex_size = 1;
 
 #elif RAINBOW_VERSION == 2
     #define HASH_STRING sha384_string
@@ -23,8 +19,6 @@
     #define SHA_DIGEST_SIZE 48
     #define FINAL_DIGEST_SIZE 80
 
-    const unsigned short element_hex_size = 2;
-
 #elif RAINBOW_VERSION == 3
     #define HASH_STRING sha512_string
     #define HASH_FILE sha512_file
@@ -32,9 +26,9 @@
     #define SHA_DIGEST_SIZE 64
     #define FINAL_DIGEST_SIZE 100
 
-    const unsigned short element_hex_size = 2;
-
 #endif
+
+#define HEX_TO_INT(chr) (chr >= 'a') ? (chr - 'a' + 10) : (chr - '0')
 
 using namespace Rainbow;
 
@@ -104,7 +98,7 @@ MatrixDS<gf> Rainbow::get_public_key_from_file(const char *pk_path) {
         for (unsigned int j=0; j < N; j++) {
             for (unsigned int i=0; i < n_polynomials; i++) {
                 unsigned char temp_char = fgetc(pk_file);
-                PK.set(i, j, gf(hex_to_int(temp_char))); 
+                PK.set(i, j, gf(HEX_TO_INT(temp_char))); 
             }
         }
     #else
@@ -112,8 +106,10 @@ MatrixDS<gf> Rainbow::get_public_key_from_file(const char *pk_path) {
             for (unsigned int i=0; i < n_polynomials; i++) {
                 unsigned char temp_buffer[2];
 
-                fread(temp_buffer, sizeof(unsigned char), 2, pk_file);
-                PK.set(i, j, gf(((hex_to_int(temp_buffer[0])) << 4) | (hex_to_int(temp_buffer[1])))); 
+                if (fread(temp_buffer, sizeof(unsigned char), 2, pk_file)  != 2)
+                    throw std::runtime_error("Premature EOF when parsing Rainbow public key file");
+
+                PK.set(i, j, gf(((HEX_TO_INT(temp_buffer[0])) << 4) | (HEX_TO_INT(temp_buffer[1])))); 
             }
         }
     #endif
@@ -130,8 +126,8 @@ VectorDS<gf> Rainbow::get_signature(const unsigned char* signature) {
     // fill the signature vector
     #if RAINBOW_VERSION == 1
         for (unsigned int i = 0; i < n_variables; i+=2) {
-            s.set(i, gf(signature[i] >> 4));
-            s.set(i+1, gf(signature[i]));
+            s.set(i, gf(signature[i / 2] >> 4));
+            s.set(i+1, gf(signature[i / 2]));
         }
     #else
         for (unsigned int i = 0; i < n_variables; i++)
@@ -162,23 +158,27 @@ VectorDS<gf> Rainbow::get_signature_from_file(const char* signature_path, unsign
     // fill the signature vector
     #if RAINBOW_VERSION == 1
         for (unsigned int i = 0; i < n_variables; i+=2) {
-            temp_buffer[0] = fgetc(signature_file);
-            temp_buffer[1] = fgetc(signature_file);
+            if (fread(temp_buffer, sizeof(unsigned char), 2, signature_file) != 2)
+                throw std::runtime_error("Premature EOF when parsing Rainbow signature file");
 
-            s.set(i, gf(hex_to_int(temp_buffer[1])));
-            s.set(i+1, gf(hex_to_int(temp_buffer[0])));
+            s.set(i, gf(HEX_TO_INT(temp_buffer[1])));
+            s.set(i+1, gf(HEX_TO_INT(temp_buffer[0])));
         }
     #else
         for (unsigned int i = 0; i < n_variables; i++) {
-            fread(temp_buffer, sizeof(unsigned char), 2, signature_file);
-            s.set(i, gf(((hex_to_int(temp_buffer[0])) << 4) | (hex_to_int(temp_buffer[1]))));
+            if (fread(temp_buffer, sizeof(unsigned char), 2, signature_file) != 2)
+                throw std::runtime_error("Premature EOF when parsing Rainbow signature file");
+
+            s.set(i, gf(((HEX_TO_INT(temp_buffer[0])) << 4) | (HEX_TO_INT(temp_buffer[1]))));
         }
     #endif
 
     // fill the salt buffer
     for (unsigned int i = 0; i < SALT_SIZE; i++) {
-        fread(temp_buffer, sizeof(unsigned char), 2, signature_file);
-        salt_buffer[i] = ((hex_to_int(temp_buffer[0])) << 4) | (hex_to_int(temp_buffer[1]));
+        if (fread(temp_buffer, sizeof(unsigned char), 2, signature_file) != 2)
+            throw std::runtime_error("Premature EOF when parsing Rainbow signature file");
+
+        salt_buffer[i] = ((HEX_TO_INT(temp_buffer[0])) << 4) | (HEX_TO_INT(temp_buffer[1]));
     }
 
     fclose(signature_file);

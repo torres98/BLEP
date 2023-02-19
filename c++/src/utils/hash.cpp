@@ -1,8 +1,8 @@
 #include <iostream>
 #include "openssl/sha.h"
 
-#include "../include/hash_utils.h"
-#include "../include/file_utils.h"
+#include "blep/utils/hash.h"
+#include "blep/utils/file.h"
 
 
 void sha256_string(const unsigned char *message, size_t mlen, unsigned char *output_buffer) {

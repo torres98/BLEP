@@ -10,9 +10,7 @@ class gf256 {
         uint8_t v;
 
     public:
-
         gf256(uint8_t v);
-
         gf256();
 
         gf256 operator+(const gf256 &b) const;

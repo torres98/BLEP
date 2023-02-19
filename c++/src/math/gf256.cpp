@@ -1,11 +1,10 @@
-#include <cstdint>
 #include <ostream>
 
-#include "../include/gf256.h"
+#include "blep/math/gf256.h"
 
-#if !(defined GF256_LOOKUP) || GF256_LOOKUP == 0
-    #include "gf16.cpp"   
-#elif GF256_LOOKUP == 1 || GF256_LOOKUP == 2 || GF256_LOOKUP == 3 || GF256_LOOKUP == 4
+#if !(defined GF16_LOOKUP) || GF16_LOOKUP == 0
+    #include "gf_operations.h"
+#elif GF256_LOOKUP == 1 || GF256_LOOKUP == 2 || GF256_LOOKUP == 3 || GF256_LOOKUP == 3
     #include "gf256_lookup.h"
 #else
     #error "Lookup level not recognized (choose between 0, 1, 2, 3 and 4)"

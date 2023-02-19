@@ -1,6 +1,11 @@
 #include <cstdint>
 
-// GF2
+#include "gf_operations.h"
+
+
+/*******/
+/* GF2 */
+/*******/
 
 uint8_t gf2_add(uint8_t a, uint8_t b) {
     return a ^ b;
@@ -10,7 +15,10 @@ uint8_t gf2_mul(uint8_t a, uint8_t b) {
     return a & b;
 }
 
-// GF4
+
+/*******/
+/* GF4 */
+/*******/
 
 uint8_t gf4_add(uint8_t a, uint8_t b) {
     return gf2_add(a >> 1, b >> 1) << 1 | gf2_add(a & 0x1, b & 0x1);
@@ -32,7 +40,10 @@ uint8_t gf4_mul(uint8_t a, uint8_t b) {
     return r ^ (gf4_mul_2(a) * (b >> 1));
 }
 
-// GF16
+
+/********/
+/* GF16 */
+/********/
 
 uint8_t gf16_add(uint8_t a, uint8_t b) {
     return gf4_add(a >> 2, b >> 2) << 2 | gf4_add(a & 0x3, b & 0x3);
@@ -56,7 +67,10 @@ uint8_t gf16_mul(uint8_t a, uint8_t b) {
     return ((a0b1_a1b0 ^ a1b1) << 2) ^ a0b0 ^ a1b1_x2;
 }
 
-// GF256
+
+/*********/
+/* GF256 */
+/*********/
 
 uint8_t gf256_add(uint8_t a, uint8_t b) {
     return gf16_add(a >> 4, b >> 4) << 4 | gf16_add(a & 0xf, b & 0xf);

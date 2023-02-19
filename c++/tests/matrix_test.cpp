@@ -1,7 +1,8 @@
 #include <cassert>
 
-#include "../include/math_utils.h"
-#include "../include/random_utils.h"
+#include "blep/math/matrix.h"
+#include "blep/utils/rand.h"
+#include "blep/math/vector.h"
 
 #include "matrix_samples.h"
 

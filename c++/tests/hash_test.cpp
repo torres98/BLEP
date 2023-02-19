@@ -2,7 +2,7 @@
 #include <cstring>
 #include <iostream>
 
-#include "../include/hash_utils.h"
+#include "blep/utils/hash.h"
 
 #include "digest_samples.h"
 
@@ -14,7 +14,7 @@ int main() {
 	std::cout << "SHA256 test: ";
 
     unsigned char digest_sha256[32];
-    sha256_string(message, digest_sha256, 1000);
+    sha256_string(message, 1000, digest_sha256);
 
 	assert(memcmp(digest_sha256, expected_sha256, 32) == 0);
     std::cout << "PASSED\n";
@@ -22,7 +22,7 @@ int main() {
     std::cout << "SHA512 test: ";
 
     unsigned char digest_sha384[48];
-    sha384_string(message, digest_sha384, 1000);
+    sha384_string(message, 1000, digest_sha384);
     
 	assert(memcmp(digest_sha384, expected_sha384, 48) == 0);
     std::cout << "PASSED\n";
@@ -30,7 +30,7 @@ int main() {
     std::cout << "SHA512 test: ";
 
     unsigned char digest_sha512[64];
-    sha512_string(message, digest_sha512, 1000);
+    sha512_string(message, 1000, digest_sha512);
     
 	assert(memcmp(digest_sha512, expected_sha512, 64) == 0);
     std::cout << "PASSED\n";

@@ -1,10 +1,12 @@
-#ifndef PROGRESSIVE_VERIFICATION_H
-#define PROGRESSIVE_VERIFICATION_H
+#ifndef PROG_VER_H
+#define PROG_VER_H
 
 #include <sstream>
+#include <stdexcept>
 
-#include "math_utils.h"
-#include "random_utils.h"
+#include "blep/math/matrix.h"
+#include "blep/utils/rand.h"
+#include "blep/math/vector.h"
 
 
 /**
@@ -58,13 +60,13 @@ bool progVer(const MatrixDS<Element> &VK, const VectorDS<Element> &s, const Vect
         shuffle_array(row_indices, vk_nrows);
 
         for (uint16_t i = 0; i < t; i++)
-            if (VK.row_vector_product(row_indices[i], s) != u(row_indices[i]))
+            if (s.row_vector_product(VK, row_indices[i]) != u(row_indices[i]))
                 verification_result = false;
 
         delete[] row_indices;
     } else {
         for (uint16_t i = 0; i < t; i++)
-            if (VK.row_vector_product(i, s) != u(i))
+            if (s.row_vector_product(VK, i) != u(i))
                 verification_result = false;
     }
 

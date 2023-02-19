@@ -6,6 +6,7 @@ build
 
 #for binary files
 *.out
+*.o
 
 #symlinks
 tiny

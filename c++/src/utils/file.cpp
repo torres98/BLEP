@@ -1,7 +1,7 @@
 #include <sstream>
 #include <stdexcept>
 
-#include "../include/file_utils.h"
+#include "blep/utils/file.h"
 
 
 FILE* open_file(const char* filename, const char* modes) {

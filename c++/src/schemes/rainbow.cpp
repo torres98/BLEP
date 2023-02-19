@@ -1,9 +1,10 @@
 #include <cstdio>
+#include <cstring>
+#include <stdexcept>
 
-#include "../include/rainbow.h"
-
-#include "../include/hash_utils.h"
-#include "../include/math_utils.h"
+#include "blep/utils/hash.h"
+#include "blep/utils/file.h"
+#include "blep/schemes/rainbow.h"
 
 #if RAINBOW_VERSION == 1
     #define HASH_STRING sha256_string
@@ -88,7 +89,7 @@ MatrixDS<gf> Rainbow::get_public_key(const unsigned char *pk) {
 
 MatrixDS<gf> Rainbow::get_public_key_from_file(const char *pk_path) {
     MatrixDS<gf> PK = MatrixDS<gf>(n_polynomials, N);
-    FILE *pk_file = fopen(pk_path, "r");
+    FILE *pk_file = open_file(pk_path, "r");
 
     //consume the header of the pk file
     while (fgetc(pk_file) != '=');
@@ -97,7 +98,12 @@ MatrixDS<gf> Rainbow::get_public_key_from_file(const char *pk_path) {
     #if RAINBOW_VERSION == 1
         for (unsigned int j=0; j < N; j++) {
             for (unsigned int i=0; i < n_polynomials; i++) {
-                unsigned char temp_char = fgetc(pk_file);
+                unsigned char temp_char;
+                
+                if ((temp_char = fgetc(pk_file)) == EOF) {
+                    throw std::runtime_error("Premature EOF when parsing Rainbow public key file");
+                }
+
                 PK.set(i, j, gf(HEX_TO_INT(temp_char))); 
             }
         }
@@ -106,8 +112,9 @@ MatrixDS<gf> Rainbow::get_public_key_from_file(const char *pk_path) {
             for (unsigned int i=0; i < n_polynomials; i++) {
                 unsigned char temp_buffer[2];
 
-                if (fread(temp_buffer, sizeof(unsigned char), 2, pk_file)  != 2)
+                if (fread(temp_buffer, sizeof(unsigned char), 2, pk_file) != 2) {
                     throw std::runtime_error("Premature EOF when parsing Rainbow public key file");
+                }
 
                 PK.set(i, j, gf(((HEX_TO_INT(temp_buffer[0])) << 4) | (HEX_TO_INT(temp_buffer[1])))); 
             }
@@ -147,7 +154,7 @@ VectorDS<gf> Rainbow::get_signature(const unsigned char* signature) {
 VectorDS<gf> Rainbow::get_signature_from_file(const char* signature_path, unsigned char *salt_buffer) {
     VectorDS<gf> s = VectorDS<gf>(N);
 
-    FILE *signature_file = fopen(signature_path, "r");
+    FILE *signature_file = open_file(signature_path, "r");
 
     // consume signature header
     while (fgetc(signature_file) != '=');

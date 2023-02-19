@@ -1,5 +1,7 @@
-#ifndef HASH_UTILS_H
-#define HASH_UTILS_H
+#ifndef HASH_H
+#define HASH_H
+
+#include <cstddef>
 
 #define SHA_BLOCK_SIZE 32768u
 

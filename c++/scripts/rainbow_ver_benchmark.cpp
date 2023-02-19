@@ -2,11 +2,12 @@
 #include <chrono>
 #include <tuple>
 
-#include "../include/random_utils.h"
-#include "../include/rainbow.h"
-#include "../include/standard_verification.h"
-#include "../include/efficient_verification.h"
-#include "../include/progressive_verification.h"
+#include "blep/mv_verification/std_ver.h"
+#include "blep/mv_verification/eff_ver.h"
+#include "blep/mv_verification/prog_ver.h"
+#include "blep/schemes/rainbow.h"
+#include "blep/utils/rand.h"
+
 
 #if RAINBOW_VERSION == 1
     #define SIG_SIZE Rainbow::n_variables / 2
@@ -17,9 +18,9 @@
 #define STR_IMPL_(x) #x
 #define STR(x) STR_IMPL_(x)
 
-char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk" STR(RAINBOW_VERSION) ".txt";
-char const *signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature" STR(RAINBOW_VERSION) ".txt";
-char const *message_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb";
+char const *pk_path = STR(PROJECT_DIR) "/tmp/pk" STR(RAINBOW_VERSION) ".txt";
+char const *signature_path = STR(PROJECT_DIR) "/tmp/signature" STR(RAINBOW_VERSION) ".txt";
+char const *message_path = STR(PROJECT_DIR) "/tmp/debug.gdb";
 
 unsigned char salt[Rainbow::SALT_SIZE];
 

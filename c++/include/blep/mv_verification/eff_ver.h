@@ -1,9 +1,12 @@
-#ifndef EFFICIENT_VERIFICATION_H
-#define EFFICIENT_VERIFICATION_H
+#ifndef EFF_VER_H
+#define EFF_VER_H
 
 #include <tuple>
+#include <stdexcept>
 
-#include "math_utils.h"
+#include "blep/math/matrix.h"
+#include "blep/math/vector.h"
+
 
 /**
  * Randomly generate a valid short verification key with the specified number of rows.

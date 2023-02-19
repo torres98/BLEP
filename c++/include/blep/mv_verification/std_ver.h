@@ -1,8 +1,10 @@
-#ifndef STANDARD_VERIFICATION_H
-#define STANDARD_VERIFICATION_H
+#ifndef STD_VER_H
+#define STD_VER_H
 
-#include "math_utils.h"
+#include <stdexcept>
 
+#include "blep/math/matrix.h"
+#include "blep/math/vector.h"
 
 /**
  * Verify the given signature vector.
@@ -36,7 +38,7 @@ bool verify_signature(const MatrixDS<Element> &VK, const VectorDS<Element> &s, c
     bool verification_result = true;
 
     for (uint16_t i = 0; i < vk_nrows; i++)
-        if (VK.row_vector_product(i, s) != u(i))
+        if (s.row_vector_product(VK, i) != u(i))
             verification_result = false;
 
     return verification_result;

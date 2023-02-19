@@ -1,9 +1,9 @@
 #include <ostream>
 
-#include "../include/gf16.h"
+#include "blep/math/gf16.h"
 
 #if !(defined GF16_LOOKUP) || GF16_LOOKUP == 0
-    #include "gf_operations.cpp"
+    #include "gf_operations.h"
 #elif GF16_LOOKUP == 1 || GF16_LOOKUP == 2 || GF16_LOOKUP == 3 || GF16_LOOKUP == 4
     #include "gf16_lookup.h"
 #else
@@ -14,7 +14,6 @@
 gf16::gf16(uint8_t v) {
     this -> v = v & 0xf;
 }
-
 
 gf16::gf16() {
     this -> v = 0;

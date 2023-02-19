@@ -1,37 +1,19 @@
 #include <cassert>
 
-#include "../include/random_utils.h"
-#include "../include/rainbow.h"
-#include "../include/standard_verification.h"
-#include "../include/efficient_verification.h"
-#include "../include/progressive_verification.h"
+#include "blep/utils/rand.h"
+#include "blep/schemes/rainbow.h"
+#include "blep/mv_verification/std_ver.h"
 
 #define STR_IMPL_(x) #x
 #define STR(x) STR_IMPL_(x)
 
-char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk" STR(RAINBOW_VERSION) ".txt";
-char const *signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature" STR(RAINBOW_VERSION) ".txt";
-char const *message_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb";
+char const *pk_path = STR(PROJECT_DIR) "/tmp/pk" STR(RAINBOW_VERSION) ".txt";
+char const *signature_path = STR(PROJECT_DIR) "/tmp/signature" STR(RAINBOW_VERSION) ".txt";
+char const *message_path = STR(PROJECT_DIR) "/tmp/debug.gdb";
 
 using Rainbow::gf;
 
 int main(int argc, char *argv[]) {
-    if (argc != 3) {
-        std::cerr << "Wrong number of arguments." << std::endl;
-        return -1;
-    }
-
-    uint16_t k = strtoul(argv[1], NULL, 10);
-    uint16_t t = strtoul(argv[2], NULL, 10);
-    
-    if (k > Rainbow::n_polynomials) {
-        std::cerr << "The number of rows of the SVK (" << k << ") can't be bigger than the number of rows of the PK (" << Rainbow::n_polynomials << ")" << std::endl;
-        return -1;
-    } else if (t > k) {
-        std::cerr << "The number of progressive steps (" << t << ") can't be bigger than the number of rows of the SVK (" << k << ")" << std::endl;
-        return -1;
-    }
-
     unsigned char salt[Rainbow::SALT_SIZE];
 
     MatrixDS<gf> PK = Rainbow::get_public_key_from_file(pk_path);
@@ -41,19 +23,6 @@ int main(int argc, char *argv[]) {
 
     assert(verify_signature(PK, s, u));
     std::cout << "Successfully verified the Rainbow signature." << std::endl;
-
-    // for efficient verification
-    auto [C, svk] = offVer(PK, k);
-    VectorDS<gf> u_eff = C * u;
-
-    assert(verify_signature(svk, s, u_eff));
-    std::cout << "Efficiently verified the Rainbow signature." << std::endl;
-
-    assert(progVer(PK, s, u, t));
-    std::cout << "Progressively verified the Rainbow signature." << std::endl;
-
-    assert(progVer(svk, s, u_eff, t));
-    std::cout << "Efficiently and progressively verified the Rainbow signature." << std::endl;
 
     return 0;
 }

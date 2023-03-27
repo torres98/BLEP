@@ -3,6 +3,7 @@ __pycache__
 tmp
 .vscode
 build
+CMakeFiles
 
 #for binary files
 *.out
@@ -14,3 +15,7 @@ effprog
 
 #for svk files
 svk.h
+
+#for cmake files
+Makefile
+*.cmake

@@ -8,8 +8,8 @@
 
 #define SHA_BLOCK_SIZE 32768u
 
-//SHA-256
-void sha256_string(const unsigned char *message, unsigned char *output_buffer, unsigned long long mlen) {
+
+void sha256_string(const unsigned char *message, size_t mlen, unsigned char *output_buffer) {
     SHA256_CTX sha256;
     SHA256_Init(&sha256);
     SHA256_Update(&sha256, message, mlen);
@@ -34,8 +34,8 @@ void sha256_file(const char *file_path, unsigned char *output_buffer) {
     free_memory(input_buffer);
 }
 
-//SHA-384
-void sha384_string(const unsigned char *message, unsigned char *output_buffer, unsigned long long mlen) {
+
+void sha384_string(const unsigned char *message, size_t mlen, unsigned char *output_buffer) {
     SHA512_CTX sha384;
     SHA384_Init(&sha384);
     SHA384_Update(&sha384, message, mlen);
@@ -60,8 +60,8 @@ void sha384_file(const char *file_path, unsigned char *output_buffer) {
     free_memory(input_buffer);
 }
 
-//SHA-512
-void sha512_string(const unsigned char *message, unsigned char *output_buffer, unsigned long long mlen) {
+
+void sha512_string(const unsigned char *message, size_t mlen, unsigned char *output_buffer) {
     SHA512_CTX sha512;
     SHA512_Init(&sha512);
     SHA512_Update(&sha512, message, mlen);

@@ -7,6 +7,7 @@ from effprog.ver.effver import generate_random_linear_transformation
 from effprog.uart_utils import *
 from effprog.parsing_utils import parse_args
 
+ZEPHYR_VERSION = 'zephyr-v3.2.0-2018-g5a5e15fc958a'
 SHA_CHUNK_SIZE = 32678
 TTY_PORT = 115200
 
@@ -114,63 +115,128 @@ if not shell_args['SKIP_BUILD']:
     print(f'Memory region{build_output[0].decode("utf-8").split("Memory region")[1]}')
 
 #LAUNCH APPLICATION
-subprocess.check_call(shell_args['FLASH_CMD'])
+if shell_args['BOARD'] == 'qemu_x86':
+    with subprocess.Popen(shell_args['FLASH_CMD'], stdin=subprocess.PIPE, stdout=subprocess.PIPE) as run_process:
 
-with find_tty_device() as serial_device:
-    print()
+        serial_input = run_process.stdout
+        print()
 
-    # discard preamble lines
-    line_discarded = serial_device.readline()
+        # discard preamble lines
+        line_discarded = serial_input.readline()
+        serial_output = None
 
-    while(not line_discarded.endswith(f'*** Booting Zephyr OS build {"v3.2.0-rc2"}  ***\r\n'.encode())):
+        while(not line_discarded.startswith(b'*** Booting Zephyr OS')):
+            print(line_discarded)
+            line_discarded = serial_input.readline()
+
+        uart_send_int(shell_args['PROGRESSIVE_STEPS'], serial_input, serial_output)
+        uart_send_int(SAMPLE_SIZE, serial_input, serial_output)
+
+        #MESSAGE
+        with open(MSG_PATH, 'rb') as message_file:
+            message = message_file.read()
+
+        mlen = len(message)
+        uart_send_int(mlen, serial_input, serial_output)
+        print('Message length correctly sent.')
+
+        #receive gothrough
+        uart_wait(serial_input)
+
+        for i in range(0, mlen, SHA_CHUNK_SIZE):
+            uart_send_segmented(message[i: i + SHA_CHUNK_SIZE], serial_input, serial_output)
+
+        print('Message correctly sent.')
+
+        eff_errors = 0
+        effprog_errors = 0
+
+        for i in range(SAMPLE_SIZE):
+            # generate random signature
+            signature = secrets.token_bytes(Rainbow.n_variables // (2 // Rainbow.element_hex_size))
+
+            #receive gothrough
+            uart_wait(serial_input)
+            uart_send_segmented(signature, serial_input, serial_input)
+
+            # generate random salt 
+            salt = secrets.token_bytes(16)
+            uart_send_segmented(salt, serial_input, serial_output)
+            
+            # read results
+            verification_results = serial_input.readline()
+            eff_errors += verification_results[0]
+            effprog_errors += verification_results[1]
+
+            print(f'\rPROGRESS: {int((i+1) / SAMPLE_SIZE * 100)}%', end='')
+
+        print('\r')
+
+        print(f'Efficient verification error rate: {eff_errors / SAMPLE_SIZE * 100:.3f}%')
+        print(f'Efficient+progressive verification error rate: {effprog_errors / SAMPLE_SIZE * 100:.3f}%', end = '\n\n')
+
+        print(f'Average resulting vector time: {uart_readline(serial_input)} microseconds')
+        print(f'Average efficient verification time: {uart_readline(serial_input)} microseconds')
+        print(f'Average efficient+progressive verification time: {uart_readline(serial_input)} microseconds')
+    
+else:
+    subprocess.check_call(shell_args['FLASH_CMD'])
+
+    with find_tty_device() as serial_device:
+        print()
+
+        # discard preamble lines
         line_discarded = serial_device.readline()
- 
-    uart_send_int(serial_device, shell_args['PROGRESSIVE_STEPS'])
-    uart_send_int(serial_device, SAMPLE_SIZE)
 
-    #MESSAGE
-    with open(MSG_PATH, 'rb') as message_file:
-        message = message_file.read()
+        while(not line_discarded.endswith(f'*** Booting Zephyr OS build {ZEPHYR_VERSION}  ***\r\n'.encode())):
+            line_discarded = serial_device.readline()
+    
+        uart_send_int(serial_device, shell_args['PROGRESSIVE_STEPS'])
+        uart_send_int(serial_device, SAMPLE_SIZE)
 
-    mlen = len(message)
-    uart_send_int(serial_device, mlen)
-    print('Message length correctly sent.')
+        #MESSAGE
+        with open(MSG_PATH, 'rb') as message_file:
+            message = message_file.read()
 
-    #receive gothrough
-    uart_wait(serial_device)
-
-    for i in range(0, mlen, SHA_CHUNK_SIZE):
-        uart_send_segmented(serial_device, message[i: i + SHA_CHUNK_SIZE])
-
-    print('Message correctly sent.')
-
-    eff_errors = 0
-    effprog_errors = 0
-
-    for i in range(SAMPLE_SIZE):
-        # generate random signature
-        signature = secrets.token_bytes(Rainbow.n_variables // (2 // Rainbow.element_hex_size))
+        mlen = len(message)
+        uart_send_int(serial_device, mlen)
+        print('Message length correctly sent.')
 
         #receive gothrough
         uart_wait(serial_device)
-        uart_send_segmented(serial_device, signature)
 
-        # generate random salt 
-        salt = secrets.token_bytes(16)
-        uart_send_segmented(serial_device, salt)
-        
-        # read results
-        verification_results = serial_device.readline()
-        eff_errors += verification_results[0]
-        effprog_errors += verification_results[1]
+        for i in range(0, mlen, SHA_CHUNK_SIZE):
+            uart_send_segmented(serial_device, message[i: i + SHA_CHUNK_SIZE])
 
-        print(f'\rPROGRESS: {int((i+1) / SAMPLE_SIZE * 100)}%', end='')
+        print('Message correctly sent.')
 
-    print('\r')
+        eff_errors = 0
+        effprog_errors = 0
 
-    print(f'Efficient verification error rate: {eff_errors / SAMPLE_SIZE * 100:.3f}%')
-    print(f'Efficient+progressive verification error rate: {effprog_errors / SAMPLE_SIZE * 100:.3f}%', end = '\n\n')
+        for i in range(SAMPLE_SIZE):
+            # generate random signature
+            signature = secrets.token_bytes(Rainbow.n_variables // (2 // Rainbow.element_hex_size))
 
-    print(f'Average resulting vector time: {uart_readline(serial_device)} microseconds')
-    print(f'Average efficient verification time: {uart_readline(serial_device)} microseconds')
-    print(f'Average efficient+progressive verification time: {uart_readline(serial_device)} microseconds')
+            #receive gothrough
+            uart_wait(serial_device)
+            uart_send_segmented(serial_device, signature)
+
+            # generate random salt 
+            salt = secrets.token_bytes(16)
+            uart_send_segmented(serial_device, salt)
+            
+            # read results
+            verification_results = serial_device.readline()
+            eff_errors += verification_results[0]
+            effprog_errors += verification_results[1]
+
+            print(f'\rPROGRESS: {int((i+1) / SAMPLE_SIZE * 100)}%', end='')
+
+        print('\r')
+
+        print(f'Efficient verification error rate: {eff_errors / SAMPLE_SIZE * 100:.3f}%')
+        print(f'Efficient+progressive verification error rate: {effprog_errors / SAMPLE_SIZE * 100:.3f}%', end = '\n\n')
+
+        print(f'Average resulting vector time: {uart_readline(serial_device)} microseconds')
+        print(f'Average efficient verification time: {uart_readline(serial_device)} microseconds')
+        print(f'Average efficient+progressive verification time: {uart_readline(serial_device)} microseconds')

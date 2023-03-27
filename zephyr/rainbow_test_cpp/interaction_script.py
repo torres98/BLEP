@@ -1,3 +1,4 @@
+import os
 import serial
 import subprocess
 
@@ -8,15 +9,35 @@ from effprog.parsing_utils import parse_args
 SHA_CHUNK_SIZE = 32678
 TTY_PORT = 115200
 
+def find_tty_device():
+    serial_device = None
+
+    for filename in os.listdir('/dev/'):
+        if filename.startswith('tty'):
+            try:
+                serial_device = serial.Serial(f'/dev/{filename}', TTY_PORT)
+            except serial.SerialException:
+                pass
+
+            break
+
+    if serial_device is None:
+        raise serial.SerialException("No tty device found.")
+
+    return serial_device
+
+
 shell_args = parse_args()
 
-if shell_args['RAINBOW_VERSION'] == 1:
+RAINBOW_VERSION = shell_args['RAINBOW_VERSION']
+
+if RAINBOW_VERSION == 1:
     from effprog.schemes.rainbow import RainbowI as Rainbow
     from effprog.schemes.gf.gf16 import gf16 as gf
 
     q = 16
 
-elif shell_args['RAINBOW_VERSION'] == 2:
+elif RAINBOW_VERSION == 2:
     from effprog.schemes.rainbow import RainbowIII as Rainbow
     from effprog.schemes.gf.gf256 import gf256 as gf
 
@@ -28,49 +49,57 @@ else:
 
     q = 256
 
-PK_PATH = f'/home/torres/Desktop/Thesis/verification_implementation/tmp/pk{shell_args["RAINBOW_VERSION"]}.txt'
-SIG_PATH = f'/home/torres/Desktop/Thesis/verification_implementation/tmp/signature{shell_args["RAINBOW_VERSION"]}.txt'
+PK_PATH = f'/home/torres/Desktop/Thesis/verification_implementation/tmp/pk{RAINBOW_VERSION}.txt'
+SIG_PATH = f'/home/torres/Desktop/Thesis/verification_implementation/tmp/signature{RAINBOW_VERSION}.txt'
 MSG_PATH = '/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb'
 
-
-#Generate random transformation and corresponding svk
-print('Creating SVK...', end=' ', flush=True)
-
-PK = Rainbow.parse_public_key(PK_PATH)
-C = generate_random_linear_transformation(shell_args['SVK_NROWS'], Rainbow.n_polynomials, 0, q-1, gf)
-SVK = C.dot(PK)
-
-f = open('src/svk.h', 'w')
-f.write(f'#include <cstdint>\n\n#define SVK_NROWS {shell_args["SVK_NROWS"]}\n\nconst uint8_t short_private_key[{SVK.size}] = {{')
-
-for i in range(SVK.shape[0]):
-    for j in range(SVK.shape[1]):
-        f.write(f'{SVK[i, j]}, ')
-
-f.write(f'}};\n\nconst uint8_t private_transformation[{C.size}] = {{')
-
-for i in range(C.shape[0]):
-    for j in range(C.shape[1]):
-        f.write(f'{C[i, j]}, ')
-
-f.write('};\n')
-f.close()
-
-print('DONE')
 
 #BUILD APPLICATION
 #if rebuild has been requested or there is no build directory...
 if not shell_args['SKIP_BUILD']:
+    #Generate random transformation and corresponding svk
+    print('Creating SVK...', end=' ', flush=True)
+
+    PK = Rainbow.parse_public_key(PK_PATH)
+    C = generate_random_linear_transformation(shell_args['SVK_NROWS'], Rainbow.n_polynomials, 0, q-1, gf)
+    SVK = C.dot(PK)
+
+    f = open('src/svk.h', 'w')
+    f.write(f'#include <cstdint>\n\n#define SVK_NROWS {shell_args["SVK_NROWS"]}\n\nconst uint8_t short_private_key[{SVK.size}] = {{')
+
+    for i in range(SVK.shape[0]):
+        for j in range(SVK.shape[1]):
+            f.write(f'{SVK[i, j]}, ')
+
+    f.write(f'}};\n\nconst uint8_t private_transformation[{C.size}] = {{')
+
+    for i in range(C.shape[0]):
+        for j in range(C.shape[1]):
+            f.write(f'{C[i, j]}, ')
+
+    f.write('};\n')
+    f.close()
+
+    print('DONE')
+
     print('Building project...', end=' ', flush=True)
+
+    gf_lookup_level = {
+        '0': 0,
+        '1': 1,
+        '1r': 2,
+        '2': 3,
+        '2r': 4
+    }
 
     build_cmd = [
         'west',
         'build',
-        '-p',
+        '-p', 'auto',
         f'-b={shell_args["BOARD"]}',
         '--',
-        f'-DRAINBOW_VERSION={shell_args["RAINBOW_VERSION"]}',
-        f'-DGF{q}_LOOKUP={shell_args["LOOKUP_LEVEL"]}',
+        f'-DRAINBOW_VERSION={RAINBOW_VERSION}',
+        f'-DGF{q}_LOOKUP={gf_lookup_level[shell_args["LOOKUP_LEVEL"]]};'
     ]
 
     build_process = subprocess.Popen(build_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -82,13 +111,19 @@ if not shell_args['SKIP_BUILD']:
         exit(-1)
 
     print('DONE')
+    print(f'Memory region{build_output[0].decode("utf-8")}')
 
 #LAUNCH APPLICATION
-with serial.Serial(shell_args['TTY_DEVICE'], TTY_PORT) as serial_device:
-    subprocess.check_call(shell_args['FLASH_CMD'])
+subprocess.check_call(shell_args['FLASH_CMD'], shell=True)
+
+with find_tty_device() as serial_device:
     print()
 
-    uart_readline(serial_device)
+    # discard preamble lines
+    line_discarded = serial_device.readline()
+
+    while(not line_discarded.endswith(f'*** Booting Zephyr OS build {"v3.2.0-rc2"}  ***\r\n'.encode())):
+        line_discarded = serial_device.readline()
 
     uart_send_int(serial_device, shell_args['PROGRESSIVE_STEPS'])
 
@@ -100,8 +135,13 @@ with serial.Serial(shell_args['TTY_DEVICE'], TTY_PORT) as serial_device:
 
         signature_raw_str = bytes.fromhex(signature_file.read()[:-1].decode('utf-8'))
 
+    #receive gothrough
     uart_wait(serial_device)
-    uart_send(serial_device, signature_raw_str)
+    uart_send_segmented(serial_device, signature_raw_str[:-16])
+
+    # send salt 
+    uart_send_segmented(serial_device, signature_raw_str[-16:])
+
     print('Signature correctly sent.')
 
     #MESSAGE

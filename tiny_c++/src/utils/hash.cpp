@@ -2,14 +2,14 @@
 #include "SHA/sha384.h"
 #include "SHA/sha512.h"
 
-#include "../include/hash_utils.h"
-#include "../include/uart_utils.h"
+#include "blep/utils/hash.h"
+#include "blep/utils/uart.h"
 
 #define CHUNK_SIZE 32768
 
 //we're supposing that each message has not more than 32768 chars
 //SHA-256
-void sha256_raw_str(unsigned char *raw_str, unsigned char *output_buffer, unsigned long long mlen) {
+void sha256_raw_str(const unsigned char *raw_str, unsigned char *output_buffer, unsigned long long mlen) {
     struct tc_sha256_state_struct s;
 	tc_sha256_init(&s);
 	tc_sha256_update(&s, raw_str, mlen);
@@ -39,7 +39,7 @@ void sha256_from_device(unsigned char *output_buffer, unsigned long long mlen) {
 
 
 //SHA-384
-void sha384_raw_str(unsigned char *raw_str, unsigned char *output_buffer, unsigned long long mlen) {
+void sha384_raw_str(const unsigned char *raw_str, unsigned char *output_buffer, unsigned long long mlen) {
     struct tc_sha384_state_struct s;
 	tc_sha384_init(&s);
 	tc_sha384_update(&s, raw_str, mlen);
@@ -69,7 +69,7 @@ void sha384_from_device(unsigned char *output_buffer, unsigned long long mlen) {
 
 
 //SHA-512
-void sha512_raw_str(unsigned char *raw_str, unsigned char *output_buffer, unsigned long long mlen) {
+void sha512_raw_str(const unsigned char *raw_str, unsigned char *output_buffer, unsigned long long mlen) {
     struct tc_sha512_state_struct s;
 	tc_sha512_init(&s);
 	tc_sha512_update(&s, raw_str, mlen);

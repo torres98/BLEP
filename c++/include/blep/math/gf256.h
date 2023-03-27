@@ -7,11 +7,10 @@
 
 class gf256 {
     private:
-        uint8_t v;
+        uint8_t v_;
 
     public:
-        gf256(uint8_t v);
-        gf256();
+        gf256(uint8_t v=0);
 
         gf256 operator+(const gf256 &b) const;
         gf256 operator+=(const gf256 &b);

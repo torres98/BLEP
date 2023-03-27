@@ -1,0 +1,11 @@
+sample:
+  description: Test the given board with efficient and progressive verification of Rainbow.
+  name: Rainbow Test
+common:
+    tags: introduction
+    integration_platforms:
+      - native_posix
+    harness: console
+    harness_config:
+      type: one_line
+

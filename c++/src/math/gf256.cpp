@@ -2,7 +2,7 @@
 
 #include "blep/math/gf256.h"
 
-#if !(defined GF16_LOOKUP) || GF16_LOOKUP == 0
+#if !(defined GF256_LOOKUP) || GF256_LOOKUP == 0
     #include "gf_operations.h"
 #elif GF256_LOOKUP == 1 || GF256_LOOKUP == 2 || GF256_LOOKUP == 3 || GF256_LOOKUP == 3
     #include "gf256_lookup.h"
@@ -11,30 +11,25 @@
 #endif
 
 
-gf256::gf256(uint8_t v) {
-    this -> v = v;
-}
-
-gf256::gf256() {
-    this -> v = 0;
-}
+gf256::gf256(uint8_t v) :
+    v_(v) {}
 
 #if !(defined GF256_LOOKUP) || GF256_LOOKUP == 0
     gf256 gf256::operator+(const gf256 &b) const {
-        return gf256(gf256_add(this -> v, b.v));
+        return gf256(gf256_add(v_, b.v_));
     }
 
     gf256 gf256::operator+=(const gf256 &b) {
-        this -> v = gf256_add(this -> v, b.v);
+        v_ = gf256_add(v_, b.v_);
         return *this;
     }
 
     gf256 gf256::operator-(const gf256 &b) const {
-        return gf256(gf256_add(this -> v, b.v));
+        return gf256(gf256_add(v_, b.v_));
     }
 
     gf256 gf256::operator*(const gf256 &b) const {
-        return gf256(gf256_mul(this -> v, b.v));
+        return gf256(gf256_mul(v_, b.v_));
     }
 
 #elif GF256_LOOKUP == 1 || GF256_LOOKUP == 2
@@ -42,21 +37,23 @@ gf256::gf256() {
     #define get_mul_index(i, j) 255*(i-1) + ((i*(3 - i)) / 2) + (j - i) - 1
 
     gf256 gf256::operator+(const gf256 &b) const {
-        if (this -> v < b.v)
-            return gf256(gf256_add_lookup[get_add_index(this -> v, b.v)]);
-        else if (b.v < this -> v)
-            return gf256(gf256_add_lookup[get_add_index(b.v, this -> v)]);
-        else
+        if (v_ < b.v_) {
+            return gf256(gf256_add_lookup[get_add_index(v_, b.v_)]);
+        } else if (b.v_ < v_) {
+            return gf256(gf256_add_lookup[get_add_index(b.v_, v_)]);
+        } else {
             return gf256();
+        }
     }
 
     gf256 gf256::operator+=(const gf256 &b) {
-        if (this -> v < b.v)
-            this -> v = gf256_add_lookup[get_add_index(this -> v, b.v)];
-        else if (b.v < this -> v)
-            this -> v = gf256_add_lookup[get_add_index(b.v, this -> v)];
-        else
-            this -> v = 0;
+        if (v_ < b.v_) {
+            v_ = gf256_add_lookup[get_add_index(v_, b.v_)];
+        } else if (b.v_ < v_) {
+            v_ = gf256_add_lookup[get_add_index(b.v_, v_)];
+        } else {
+            v_ = 0;
+        }
 
         return *this;
     }
@@ -66,47 +63,48 @@ gf256::gf256() {
     }
 
     gf256 gf256::operator*(const gf256 &b) const {
-        if (this -> v == 0 || b.v == 0)
+        if (v_ == 0 || b.v_ == 0) {
             return gf256();
-        if (this -> v < b.v)
-            return gf256(gf256_mul_lookup[get_mul_index(this -> v, b.v)]);
-        else
-            return gf256(gf256_mul_lookup[get_mul_index(b.v, this -> v)]);
+        } else if (v_ < b.v_) {
+            return gf256(gf256_mul_lookup[get_mul_index(v_, b.v_)]);
+        } else {
+            return gf256(gf256_mul_lookup[get_mul_index(b.v_, v_)]);
+        }
     }
 
 #else
     gf256 gf256::operator+(const gf256 &b) const {
-        return gf256(gf256_add_lookup[this -> v][b.v]);
+        return gf256(gf256_add_lookup[v_][b.v_]);
     }
 
     gf256 gf256::operator+=(const gf256 &b) {
-        this -> v = gf256_add_lookup[this -> v][b.v];
+        v_ = gf256_add_lookup[v_][b.v_];
 
         return *this;
     }
 
     gf256 gf256::operator-(const gf256 &b) const {
-        return gf256(gf256_add_lookup[this -> v][b.v]);
+        return gf256(gf256_add_lookup[v_][b.v_]);
     }
 
     gf256 gf256::operator*(const gf256 &b) const {
-        return gf256(gf256_mul_lookup[this -> v][b.v]);
+        return gf256(gf256_mul_lookup[v_][b.v_]);
     }
 
 #endif
 
 gf256::operator bool() const {
-    return v != 0;
+    return v_ != 0;
 }
 
 bool gf256::operator==(const gf256 &b) const {
-    return v == b.v;
+    return v_ == b.v_;
 }
 
 bool gf256::operator!=(const gf256 &b) const {
-    return v != b.v;
+    return v_ != b.v_;
 }
 
 std::ostream& operator<<(std::ostream &s, const gf256 &a) {
-    return s << (unsigned int) a.v;
+    return s << a.v_;
 }

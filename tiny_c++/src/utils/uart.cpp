@@ -3,7 +3,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/uart.h>
 
-#include "../include/uart_utils.h"
+#include "blep/utils/uart.h"
 
 #define UART_DEVICE_NODE DT_CHOSEN(zephyr_shell_uart)
 

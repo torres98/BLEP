@@ -39,12 +39,12 @@
 extern const unsigned short v1, o1, o2, q, n_variables, n_polynomials;
 extern const unsigned int N;
 
-
-void get_message_digest(const struct device *uart_dev, unsigned char *output_buffer, unsigned int mlen);
+void get_message_digest(const unsigned char* message, unsigned char *output_buffer, unsigned int mlen);
+//void get_message_digest(unsigned char *output_buffer, unsigned int mlen);
 void get_complete_digest(unsigned char *output_buffer, const unsigned char *message_digest, const unsigned char* salt);
-void get_complete_digest_from_device(const struct device *uart_dev, unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen);
+void get_complete_digest_from_device(unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen);
 
-MatrixDS* parse_signature(const struct device *uart_dev, unsigned char *salt_buffer);
+MatrixDS* parse_signature(unsigned char *salt_buffer);
 MatrixDS* get_result_vector(const unsigned char* digest);
 
 #endif

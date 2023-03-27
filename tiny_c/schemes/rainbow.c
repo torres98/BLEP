@@ -6,6 +6,7 @@
 #include "../include/rainbow.h"
 #include "../include/hash_utils.h"
 #include "../include/math_utils.h"
+#include "../include/random_utils.h"
 #include "../include/uart_utils.h"
 
 #if RAINBOW_VERSION == 1
@@ -37,11 +38,14 @@
 const unsigned short n_variables = v1+o1+o2, n_polynomials = n_variables - v1;
 const unsigned int N = n_variables * (n_variables + 1) / 2;
 
+void get_message_digest(const unsigned char* message, unsigned char *output_buffer, unsigned int mlen) {
+    HASH_RAW_STR(message, output_buffer, mlen);
+}
 
-void get_message_digest(const struct device *uart_dev, unsigned char *output_buffer, unsigned int mlen) {
-    send_ok(uart_dev);
+void get_message_digest_from_device(unsigned char *output_buffer, unsigned int mlen) {
+    send_ok();
     
-    HASH_FROM_DEVICE(uart_dev, output_buffer, mlen);
+    HASH_FROM_DEVICE(output_buffer, mlen);
 }
 
 void get_complete_digest(unsigned char *output_buffer, const unsigned char *message_digest, const unsigned char* salt) {
@@ -59,10 +63,10 @@ void get_complete_digest(unsigned char *output_buffer, const unsigned char *mess
     #endif
 }
 
-void get_complete_digest_from_device(const struct device *uart_dev, unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen) {
+void get_complete_digest_from_device(unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen) {
     unsigned char temp_buffer[SHA_DIGEST_SIZE + SALT_SIZE];
 
-    get_message_digest(uart_dev, temp_buffer, mlen);
+    get_message_digest_from_device(temp_buffer, mlen);
     
     // copy the salt at the end of the array (digest = H(m) || salt)
     memcpy(temp_buffer + SHA_DIGEST_SIZE, salt, SALT_SIZE);
@@ -75,16 +79,14 @@ void get_complete_digest_from_device(const struct device *uart_dev, unsigned cha
     #endif
 }
 
-MatrixDS* parse_signature(const struct device *uart_dev, unsigned char *salt_buffer) {
+MatrixDS* parse_signature(unsigned char *salt_buffer) {
     MatrixDS* s = CreateMatrix(N, 1, false);
-
-    send_ok(uart_dev);
 
     #if RAINBOW_VERSION == 1
         unsigned char byte_read;
 
         for (unsigned short i = 0; i < n_variables; i+=2) {
-            byte_read = read_byte(uart_dev);
+            fill_buffer_randomly(&byte_read, 1);
 
             // inverted order
             set(s, i, 0, (gf) (byte_read & 0xf));
@@ -92,24 +94,17 @@ MatrixDS* parse_signature(const struct device *uart_dev, unsigned char *salt_buf
         }
 
     #else
-        for (unsigned short i = 0; i < n_variables; i++)
-            set(s, i, 0, (gf) read_byte(uart_dev));
-        /*unsigned char buf[32];
+        for (unsigned short i = 0; i < n_variables; i++) {
+            unsigned char byte_read;
+            fill_buffer_randomly(&byte_read, 1);
 
-        for (unsigned short i = 0; i < n_variables; i+=32) {
-            for (unsigned int j = 0; j < 32 && i+j < n_variables; j++)
-		        buf[j] = read_byte(uart_dev);
-
-            for (unsigned short j = i; j < i+32 && j < n_variables; j++)
-                set(s, j, 0, (gf) buf[j-i]);
-            
-            send_ack(uart_dev);
-        }*/
+            set(s, i, 0, (gf) byte_read);
+        }
 
     #endif
 
     // read salt
-    read_n_bytes(uart_dev, salt_buffer, SALT_SIZE);
+    fill_buffer_randomly(salt_buffer, SALT_SIZE);
     
     // compute the quadratic products
     unsigned int h = N - 1;
@@ -120,6 +115,41 @@ MatrixDS* parse_signature(const struct device *uart_dev, unsigned char *salt_buf
 
     return s;
 }
+
+/*MatrixDS* parse_signature(unsigned char *salt_buffer) {
+    MatrixDS* s = CreateMatrix(N, 1, false);
+
+    send_ok();
+
+    #if RAINBOW_VERSION == 1
+        unsigned char byte_read;
+
+        for (unsigned short i = 0; i < n_variables; i+=2) {
+            byte_read = read_byte();
+
+            // inverted order
+            set(s, i, 0, (gf) (byte_read & 0xf));
+            set(s, i+1, 0, (gf) (byte_read >> 4));
+        }
+
+    #else
+        for (unsigned short i = 0; i < n_variables; i++)
+            set(s, i, 0, (gf) read_byte());
+
+    #endif
+
+    // read salt
+    read_n_bytes(salt_buffer, SALT_SIZE);
+    
+    // compute the quadratic products
+    unsigned int h = N - 1;
+
+    for (unsigned int i = n_variables; i > 0; i--)
+        for (unsigned int j = n_variables; j >= i; j--)
+            set(s, h--, 0, GF_MUL(get(s, i-1, 0), get(s, j-1, 0)));
+
+    return s;
+}*/
 
 MatrixDS* get_result_vector(const unsigned char* digest) {
     MatrixDS* u = CreateMatrix(n_polynomials, 1, false);

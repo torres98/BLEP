@@ -19,19 +19,20 @@ int main() {
     uint32_t result_vector_time = 0, eff_verification_time = 0, effprog_verification_time = 0;
 
     //Receive svk_nrows, progressive_steps and sample_size
-    uint16_t PROGRESSIVE_STEPS = read_uint32(uart_dev), SAMPLE_SIZE = read_uint32(uart_dev);
+    uint16_t PROGRESSIVE_STEPS = read_uint32();
+    uint16_t SAMPLE_SIZE = read_uint32();
 
     // read message length (4 bytes) 
-    uint32_t mlen = read_uint32(uart_dev);
+    uint32_t mlen = read_uint32();
     
-    get_message_digest(uart_dev, message_digest, mlen);
+    get_message_digest(message_digest, mlen);
 
     // load the linear transformation and the short verification key as a Matrix objects
     MatrixDS* SVK = CreateMatrixFromArray((gf*) short_private_key, SVK_NROWS, N, false);
     MatrixDS* C = CreateMatrixFromArray((gf*) private_transformation, SVK_NROWS, n_polynomials, false);
 
     for (unsigned int i = 0; i < SAMPLE_SIZE; i++) {
-        MatrixDS* s = parse_signature(uart_dev, salt);
+        MatrixDS* s = parse_signature(salt);
 
         // Compute resulting vector
         get_complete_digest(final_digest, message_digest, salt);

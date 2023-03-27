@@ -3,11 +3,12 @@
 
 #include <zephyr/kernel.h>
 
-#include "tiny/include/math_utils.h"
-#include "tiny/include/progressive_verification.h"
-#include "tiny/include/standard_verification.h"
-#include "tiny/include/rainbow.h"
-#include "tiny/include/uart_utils.h"
+#include "blep/math/matrix.h"
+#include "blep/math/vector.h"
+#include "blep/mv_verification/prog_ver.h"
+#include "blep/mv_verification/std_ver.h"
+#include "blep/schemes/rainbow.h"
+#include "blep/utils/uart.h"
 
 #include "svk.h"
 
@@ -18,16 +19,16 @@ unsigned char salt[Rainbow::SALT_SIZE];
 unsigned char final_digest[Rainbow::FINAL_DIGEST_SIZE];
 
 int main() {
-    uint16_t PROGRESSIVE_STEPS = read_uint32(uart_dev);
+    uint16_t PROGRESSIVE_STEPS = read_uint32();
 
     //read signature
-    VectorDS<gf> s = Rainbow::parse_signature(uart_dev, salt);
+    VectorDS<gf> s = Rainbow::parse_signature(salt);
 
     // read message length (4 bytes) 
-    uint32_t mlen = read_uint32(uart_dev);
+    uint32_t mlen = read_uint32();
     
     // read message and compute its Rainbow digest
-    Rainbow::get_complete_digest(uart_dev, final_digest, salt, mlen);
+    Rainbow::get_complete_digest(final_digest, salt, mlen);
 
     std::cout << std::setfill('0') << std::hex;
 

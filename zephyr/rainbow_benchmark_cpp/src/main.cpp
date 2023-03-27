@@ -3,11 +3,12 @@
 
 #include <zephyr/kernel.h>
 
-#include "tiny/include/math_utils.h"
-#include "tiny/include/progressive_verification.h"
-#include "tiny/include/standard_verification.h"
-#include "tiny/include/rainbow.h"
-#include "tiny/include/uart_utils.h"
+#include "blep/math/matrix.h"
+#include "blep/math/vector.h"
+#include "blep/mv_verification/prog_ver.h"
+#include "blep/mv_verification/std_ver.h"
+#include "blep/schemes/rainbow.h"
+#include "blep/utils/uart.h"
 
 #include "svk.h"
 

@@ -6,7 +6,7 @@
 
 #include <zephyr/random/rand32.h>
 
-#include "math_utils.h"
+#include "blep/math/matrix.h"
 
 static std::mt19937 rng(sys_rand32_get());
 

@@ -15,7 +15,10 @@ def parse_args(parse_sample_size = False):
         'arduino_due': ['west', 'flash', '--skip-rebuild'],
         'adafruit_itsybitsy_m4_express': ['west', 'flash', '--skip-rebuild'],
         'rpi_pico': ['cp', 'build/zephyr/zephyr.uf2', '/media/torres/RPI-RP2'],
-        'esp32': ['west', 'flash', '--skip-rebuild']
+        'esp32': ['west', 'flash', '--skip-rebuild'],
+        'qemu_x86': ['west', 'build', '-t', 'run'],
+        'qemu_riscv32': ['west', 'build', '-t', 'run'],
+        'qemu_cortex_r5': ['west', 'build', '-t', 'run']
     }
 
     n_polynomials = {

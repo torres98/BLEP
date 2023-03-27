@@ -2,8 +2,13 @@
 
 #include "../include/random_utils.h"
 
+
 void fill_buffer_randomly(void* buffer, size_t size) {
-    sys_csrand_get(buffer, size);
+    #ifdef CONFIG_CSPRING_ENABLED
+        sys_csrand_get(buffer, size);
+    #else
+        sys_rand_get(buffer, size);
+    #endif
 }
 
 void shuffle_array(uint16_t* arr, unsigned int n) {

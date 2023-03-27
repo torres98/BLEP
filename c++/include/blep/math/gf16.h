@@ -7,11 +7,10 @@
 
 class gf16 {
     private:
-        uint8_t v;
+        uint8_t v_;
 
     public:
-        gf16(uint8_t v);
-        gf16();
+        gf16(uint8_t v=0);
 
         gf16 operator+(const gf16 &b) const;
         gf16 operator+=(const gf16 &b);

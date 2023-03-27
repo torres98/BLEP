@@ -37,11 +37,21 @@
 extern const unsigned short v1, o1, o2, q, n_variables, n_polynomials;
 extern const unsigned int N;
 
-void get_message_digest(const char* message_path, unsigned char *output_buffer);
-void get_complete_digest(const char* message_path, const unsigned char* salt, unsigned char *output_buffer);
+void get_message_digest(const unsigned char* message, size_t mlen, const unsigned char* salt, unsigned char *output_buffer);
+void get_message_digest_from_file(const char* message_path, const unsigned char* salt, unsigned char *output_buffer);
 
-MatrixDS* parse_public_key(const char *pk_path);
-MatrixDS* parse_signature(const char* signature_path, unsigned char *salt_buffer);
+//void get_message_digest(const char* message_path, unsigned char *output_buffer);
+//void get_complete_digest(const char* message_path, const unsigned char* salt, unsigned char *output_buffer);
+
+MatrixDS* get_public_key(const unsigned char *pk);
+MatrixDS* get_public_key_from_file(const char *pk_path);
+
+//MatrixDS* parse_public_key(const char *pk_path);
+
+MatrixDS* get_signature(const unsigned char* signature);
+MatrixDS* get_signature_from_file(const char* signature_path, unsigned char *salt_buffer);
+
+//MatrixDS* parse_signature(const char* signature_path, unsigned char *salt_buffer);
 MatrixDS* get_result_vector(const char* message_path, const unsigned char* salt);
 
 #endif

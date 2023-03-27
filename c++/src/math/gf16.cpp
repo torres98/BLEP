@@ -11,30 +11,25 @@
 #endif
 
 
-gf16::gf16(uint8_t v) {
-    this -> v = v & 0xf;
-}
-
-gf16::gf16() {
-    this -> v = 0;
-}
+gf16::gf16(uint8_t v) :
+    v_(v) {}
 
 #if !(defined GF16_LOOKUP) || GF16_LOOKUP == 0
     gf16 gf16::operator+(const gf16 &b) const {
-        return gf16(gf16_add(this -> v, b.v));
+        return gf16(gf16_add(v_, b.v_));
     }
 
     gf16 gf16::operator+=(const gf16 &b) {
-        this -> v = gf16_add(this -> v, b.v);
+        v_ = gf16_add(v_, b.v_);
         return *this;
     }
 
     gf16 gf16::operator-(const gf16 &b) const {
-        return gf16(gf16_add(this -> v, b.v));
+        return gf16(gf16_add(v_, b.v_));
     }
 
     gf16 gf16::operator*(const gf16 &b) const {
-        return gf16(gf16_mul(this -> v, b.v));
+        return gf16(gf16_mul(v_, b.v_));
     }
 
 #elif GF16_LOOKUP == 1 || GF16_LOOKUP == 2
@@ -42,21 +37,23 @@ gf16::gf16() {
     #define get_mul_index(i, j) 15*(i-1) + ((i*(3 - i)) / 2) + (j - i) - 1
 
     gf16 gf16::operator+(const gf16 &b) const {
-        if (this -> v < b.v)
-            return gf16(gf16_add_lookup[get_add_index(this -> v, b.v)]);
-        else if (b.v < this -> v)
-            return gf16(gf16_add_lookup[get_add_index(b.v, this -> v)]);
-        else
+        if (v_ < b.v_) {
+            return gf16(gf16_add_lookup[get_add_index(v_, b.v_)]);
+        } else if (b.v_ < v_) {
+            return gf16(gf16_add_lookup[get_add_index(b.v_, v_)]);
+        } else {
             return gf16();
+        }
     }
 
     gf16 gf16::operator+=(const gf16 &b) {
-        if (this -> v < b.v)
-            this -> v = gf16_add_lookup[get_add_index(this -> v, b.v)];
-        else if (b.v < this -> v)
-            this -> v = gf16_add_lookup[get_add_index(b.v, this -> v)];
-        else
-            this -> v = 0;
+        if (v_ < b.v_) {
+            v_ = gf16_add_lookup[get_add_index(v_, b.v_)];
+        } else if (b.v_ < v_) {
+            v_ = gf16_add_lookup[get_add_index(b.v_, v_)];
+        } else {
+            v_ = 0;
+        }
 
         return *this;
     }
@@ -66,47 +63,48 @@ gf16::gf16() {
     }
 
     gf16 gf16::operator*(const gf16 &b) const {
-        if (this -> v == 0 || b.v == 0)
+        if (v_ == 0 || b.v_ == 0) {
             return gf16();
-        if (this -> v < b.v)
-            return gf16(gf16_mul_lookup[get_mul_index(this -> v, b.v)]);
-        else
-            return gf16(gf16_mul_lookup[get_mul_index(b.v, this -> v)]);
+        } else if (v_ < b.v_) {
+            return gf16(gf16_mul_lookup[get_mul_index(v_, b.v_)]);
+        } else {
+            return gf16(gf16_mul_lookup[get_mul_index(b.v_, v_)]);
+        }
     }
 
 #else
     gf16 gf16::operator+(const gf16 &b) const {
-        return gf16(gf16_add_lookup[this -> v][b.v]);
+        return gf16(gf16_add_lookup[v_][b.v_]);
     }
 
     gf16 gf16::operator+=(const gf16 &b) {
-        this -> v = gf16_add_lookup[this -> v][b.v];
+        v_ = gf16_add_lookup[v_][b.v_];
 
         return *this;
     }
 
     gf16 gf16::operator-(const gf16 &b) const {
-        return gf16(gf16_add_lookup[this -> v][b.v]);
+        return gf16(gf16_add_lookup[v_][b.v_]);
     }
 
     gf16 gf16::operator*(const gf16 &b) const {
-        return gf16(gf16_mul_lookup[this -> v][b.v]);
+        return gf16(gf16_mul_lookup[v_][b.v_]);
     }
 
 #endif
 
 gf16::operator bool() const {
-    return v;
+    return v_;
 }
 
 bool gf16::operator==(const gf16 &b) const {
-    return v == b.v;
+    return v_ == b.v_;
 }
 
 bool gf16::operator!=(const gf16 &b) const {
-    return v != b.v;
+    return v_ != b.v_;
 }
 
 std::ostream& operator<<(std::ostream &s, const gf16 &a) {
-    return s << (unsigned int) a.v;
+    return s << a.v_;
 }

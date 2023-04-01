@@ -3,7 +3,6 @@
 #include "blep/utils/uart.h"
 #include "blep/utils/hash.h"
 
-
 #ifndef RAINBOW_VERSION
     #define RAINBOW_VERSION 1
 #endif
@@ -37,7 +36,7 @@ namespace Rainbow {
 
     void get_message_digest(const unsigned char *message, unsigned char *output_buffer, unsigned int mlen);
 
-    //void get_message_digest(unsigned char *output_buffer, unsigned int mlen);
+    void get_message_digest(unsigned char *output_buffer, unsigned int mlen);
     void get_complete_digest(unsigned char *output_buffer, const unsigned char *message_digest, const unsigned char* salt);
     void get_complete_digest(unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen);
 

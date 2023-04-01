@@ -1,7 +1,7 @@
 #include <cstring>
 
 #include <zephyr/device.h>
-#include <zephyr/drivers/uart.h> 
+#include <zephyr/drivers/uart.h>
 
 #include "blep/schemes/rainbow.h"
 
@@ -12,20 +12,14 @@
 #include "blep/utils/uart.h"
 
 #if RAINBOW_VERSION == 1
-    #define GF_MUL gf16_mul
-
     #define HASH_RAW_STR sha256_raw_str
     #define HASH_FROM_DEVICE sha256_from_device
 
 #elif RAINBOW_VERSION == 2
-    #define GF_MUL gf256_mul
-
     #define HASH_RAW_STR sha384_raw_str
     #define HASH_FROM_DEVICE sha384_from_device
 
 #elif RAINBOW_VERSION == 3
-    #define GF_MUL gf256_mul
-
     #define HASH_RAW_STR sha512_raw_str
     #define HASH_FROM_DEVICE sha512_from_device
 
@@ -33,12 +27,11 @@
 
 using Rainbow::gf;
 
-
 void Rainbow::get_message_digest(const unsigned char *message, unsigned char *output_buffer, unsigned int mlen) {
     HASH_RAW_STR(message, output_buffer, mlen);
 }
 
-void get_message_digest(unsigned char *output_buffer, unsigned int mlen) {
+void Rainbow::get_message_digest(unsigned char *output_buffer, unsigned int mlen) {
     send_ok(); //maybe move inside function
 
     HASH_FROM_DEVICE(output_buffer, mlen);
@@ -87,9 +80,11 @@ VectorDS<gf> Rainbow::parse_signature(unsigned char *salt_buffer) {
     // compute the quadratic products
     unsigned int h = N - 1;
 
-    for (unsigned int i = n_variables; i > 0; i--)
-        for (unsigned int j = n_variables; j >= i; j--)
+    for (unsigned int i = n_variables; i > 0; i--) {
+        for (unsigned int j = n_variables; j >= i; j--) {
             s.set(h--, s(i-1) * s(j-1));
+        }
+    }
 
     return s;
 }

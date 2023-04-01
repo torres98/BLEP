@@ -1,12 +1,14 @@
-//#include <iostream>
+#include <cstring>
 #include <iomanip>
+//#include <iostream>
 
 #include <zephyr/kernel.h>
 
-#include "tiny/include/math_utils.h"
-#include "tiny/include/progressive_verification.h"
-#include "tiny/include/standard_verification.h"
-#include "tiny/include/rainbow.h"
+#include "blep/math/matrix.h"
+#include "blep/math/vector.h"
+#include "blep/mv_verification/prog_ver.h"
+#include "blep/mv_verification/std_ver.h"
+#include "blep/schemes/rainbow.h"
 
 #include "svk.h"
 
@@ -28,6 +30,9 @@ int main() {
     // load the linear transformation and the short verification key as a Matrix objects
     MatrixDS<gf> SVK = MatrixDS<gf>((gf*) short_private_key, SVK_NROWS, Rainbow::N);
     MatrixDS<gf> C = MatrixDS<gf>((gf*) private_transformation, SVK_NROWS, Rainbow::n_polynomials);
+
+    printf("%p - %p\n", &(short_private_key[0]), &(short_private_key[1]));
+    printf("%p - %p\n", &(private_transformation[0]), &(private_transformation[1]));
 
     for (uint16_t i = 0; i < SAMPLE_SIZE; i++) {
         VectorDS<gf> s = Rainbow::parse_signature(salt);

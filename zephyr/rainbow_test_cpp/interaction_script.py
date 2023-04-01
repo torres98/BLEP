@@ -64,21 +64,20 @@ if not shell_args['SKIP_BUILD']:
     C = generate_random_linear_transformation(shell_args['SVK_NROWS'], Rainbow.n_polynomials, 0, q-1, gf)
     SVK = C.dot(PK)
 
-    f = open('src/svk.h', 'w')
-    f.write(f'#include <cstdint>\n\n#define SVK_NROWS {shell_args["SVK_NROWS"]}\n\nconst uint8_t short_private_key[{SVK.size}] = {{')
+    with open('src/svk.h', 'w') as svk_file:
+        svk_file.write(f'#include <cstdint>\n\n#define SVK_NROWS {shell_args["SVK_NROWS"]}\n\nconst uint8_t short_private_key[{SVK.size}] = {{')
 
-    for i in range(SVK.shape[0]):
-        for j in range(SVK.shape[1]):
-            f.write(f'{SVK[i, j]}, ')
+        for i in range(SVK.shape[0]):
+            for j in range(SVK.shape[1]):
+                svk_file.write(f'{SVK[i, j]}, ')
 
-    f.write(f'}};\n\nconst uint8_t private_transformation[{C.size}] = {{')
+        svk_file.write(f'}};\n\nconst uint8_t private_transformation[{C.size}] = {{')
 
-    for i in range(C.shape[0]):
-        for j in range(C.shape[1]):
-            f.write(f'{C[i, j]}, ')
+        for i in range(C.shape[0]):
+            for j in range(C.shape[1]):
+                svk_file.write(f'{C[i, j]}, ')
 
-    f.write('};\n')
-    f.close()
+        svk_file.write('};\n')
 
     print('DONE')
 
@@ -95,7 +94,7 @@ if not shell_args['SKIP_BUILD']:
     build_cmd = [
         'west',
         'build',
-        '-p', 'auto',
+        '-p=auto',
         f'-b={shell_args["BOARD"]}',
         '--',
         f'-DRAINBOW_VERSION={RAINBOW_VERSION}',
@@ -111,10 +110,10 @@ if not shell_args['SKIP_BUILD']:
         exit(-1)
 
     print('DONE')
-    print(f'Memory region{build_output[0].decode("utf-8")}')
+    print(f'Memory region{build_output[0].decode("utf-8").split("Memory region")[1]}')
 
 #LAUNCH APPLICATION
-subprocess.check_call(shell_args['FLASH_CMD'], shell=True)
+subprocess.check_call(shell_args['FLASH_CMD'])
 
 with find_tty_device() as serial_device:
     print()

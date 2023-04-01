@@ -1,1 +1,0 @@
-/home/torres/Desktop/Thesis/verification_implementation/zephyr/rainbow_benchmark_qemu_c/interaction_script.py

@@ -1,10 +1,20 @@
 import os
 import signal
 import subprocess
+import sys
+import threading
 
 from effprog.ver.effver import generate_random_linear_transformation
 from effprog.uart_utils import *
 from effprog.parsing_utils import parse_args
+
+def signal_handler(sig, frame):
+    global zephyr_process
+    os.killpg(os.getpgid(zephyr_process.pid), signal.SIGTERM)
+    
+    global read_output_thread
+    read_output_thread.join()
+    print('\nThank you for using BLEP, bye!')
 
 
 shell_args = parse_args(True)
@@ -42,21 +52,20 @@ if not shell_args['SKIP_BUILD']:
     C = generate_random_linear_transformation(shell_args['SVK_NROWS'], Rainbow.n_polynomials, 0, q-1, gf)
     SVK = C.dot(PK)
 
-    f = open('src/svk.h', 'w')
-    f.write(f'#include <stdint.h>\n\n#define SVK_NROWS {shell_args["SVK_NROWS"]}\n\nconst uint8_t short_private_key[{SVK.size}] = {{')
+    with open('src/svk.h', 'w') as svk_file:
+        svk_file.write(f'#include <stdint.h>\n\n#define SVK_NROWS {shell_args["SVK_NROWS"]}\n\nconst gf{q} short_private_key[{SVK.size}] = {{')
 
-    for i in range(SVK.shape[0]):
-        for j in range(SVK.shape[1]):
-            f.write(f'{SVK[i, j]}, ')
+        for i in range(SVK.shape[0]):
+            for j in range(SVK.shape[1]):
+                svk_file.write(f'{SVK[i, j]}, ')
 
-    f.write(f'}};\n\nconst uint8_t private_transformation[{C.size}] = {{')
+        svk_file.write(f'}};\n\nconst uint8_t private_transformation[{C.size}] = {{')
 
-    for i in range(C.shape[0]):
-        for j in range(C.shape[1]):
-            f.write(f'{C[i, j]}, ')
+        for i in range(C.shape[0]):
+            for j in range(C.shape[1]):
+                svk_file.write(f'{C[i, j]}, ')
 
-    f.write('};\n')
-    f.close()
+        svk_file.write('};\n')
 
     print('DONE')
 
@@ -73,7 +82,7 @@ if not shell_args['SKIP_BUILD']:
     build_cmd = [
         'west',
         'build',
-        '-p',
+        '-p=auto',
         f'-b={shell_args["BOARD"]}',
         '--',
         f'-DRAINBOW_VERSION={RAINBOW_VERSION}',
@@ -93,16 +102,26 @@ if not shell_args['SKIP_BUILD']:
     print('DONE')
     print(f'Memory region{build_output[0].decode("utf-8").split("Memory region")[1]}')
 
-#LAUNCH APPLICATION
-with subprocess.Popen(shell_args['FLASH_CMD'], stdout=subprocess.PIPE, preexec_fn=os.setsid) as proc:
-    proc_stdout = proc.stdout
-    
+
+def read_zephyr_output(proc_stdout):
     output_line = proc_stdout.readline()
 
     while(not output_line.startswith(b'*** Booting')):
         output_line = proc_stdout.readline()
 
-    for _ in range(3):
-        print(proc_stdout.readline().decode('utf-8'), end='')
+    for line in iter(proc_stdout.readline, b''):
+        print(line.decode('utf-8'), end='')
 
-    os.killpg(os.getpgid(proc.pid), signal.SIGTERM)
+signal.signal(signal.SIGINT, signal_handler)
+
+print("""
+*************************************************************
+****To interrupt the application press CTRL+C at any time****
+*************************************************************
+""")
+
+#LAUNCH APPLICATION
+zephyr_process = subprocess.Popen(shell_args['FLASH_CMD'], stdout=subprocess.PIPE, preexec_fn=os.setsid)
+
+read_output_thread = threading.Thread(target=read_process_output, args=(zephyr_process.stdout,))
+read_output_thread.start()

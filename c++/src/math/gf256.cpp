@@ -33,8 +33,10 @@ gf256::gf256(uint8_t v) :
     }
 
 #elif GF256_LOOKUP == 1 || GF256_LOOKUP == 2
-    #define get_add_index(i, j) ((i*(511 - i)) / 2) + (j - i - 1)
-    #define get_mul_index(i, j) 255*(i-1) + ((i*(3 - i)) / 2) + (j - i) - 1
+    //#define get_add_index(i, j) ((i*(511 - i)) / 2) + (j - i - 1)
+    #define get_add_index(i, j) ((i*(0x1ff ^ i)) >> 1) + (j - i - 1)
+    //#define get_mul_index(i, j) 255*(i-1) + ((i*(3 - i)) / 2) + (j - i) - 1
+    #define get_mul_index(i, j) 255*(i-1) + ((i*(3 - i)) >> 1) + (j - i) - 1
 
     gf256 gf256::operator+(const gf256 &b) const {
         if (v_ < b.v_) {

@@ -1,34 +1,14 @@
-# SPDX-License-Identifier: Apache-2.0
-
 cmake_minimum_required(VERSION 3.20.0)
+set(CMAKE_CXX_STANDARD 17)
 
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
-project(rainbow_benchmark)
+project(RAINBOW-BENCHMARK-CPP LANGUAGES CXX)
 
-#[[ 
-if(${RAINBOW_VERSION} STREQUAL "1")
-    set(GF_LIB "src/tiny/gf/gf16.cpp")
-elseif(${RAINBOW_VERSION} STREQUAL "2")
-    set(GF_LIB "src/tiny/gf/gf256.cpp")
-    set(HASH_LIB "src/tiny/utils/SHA/sha384.c")
-elseif(${RAINBOW_VERSION} STREQUAL "3")
-    set(GF_LIB "src/tiny/gf/gf256.cpp")
-    set(HASH_LIB "src/tiny/utils/SHA/sha512.c")
+add_subdirectory(src/tiny_blep/)
+
+if (BOARD MATCHES "^qemu")
+    target_sources(app PRIVATE src/qemu_benchmark.cpp)
+    target_compile_definitions(app PRIVATE SAMPLE_SIZE=${SAMPLE_SIZE} PROGRESSIVE_STEPS=${PROGRESSIVE_STEPS})
 else()
-    MESSAGE(FATAL_ERROR "Rainbow version not recognized.")
+    target_sources(app PRIVATE src/benchmark.cpp)
 endif()
-
-add_definitions(-DRAINBOW_VERSION=${RAINBOW_VERSION})
-
-
-if(DEFINED GF16_LOOKUP)
-    add_definitions(-DGF16_LOOKUP=${GF16_LOOKUP})
-endif()
-
-if(DEFINED GF256_LOOKUP)
-    add_definitions(-DGF256_LOOKUP=${GF256_LOOKUP})
-endif()
-]]
-
-add_subdirectory(tiny/)
-target_sources(app PRIVATE src/main.cpp)

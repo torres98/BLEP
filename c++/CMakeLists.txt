@@ -19,7 +19,9 @@ add_subdirectory(tests/)
 add_subdirectory(scripts/)
 
 if(DEFINED RAINBOW_VERSION)
-    target_compile_definitions(blep_cpp PUBLIC RAINBOW_VERSION=${RAINBOW_VERSION})
+    target_compile_definitions(blep_cpp INTERFACE RAINBOW_VERSION=${RAINBOW_VERSION})
+else()
+    target_compile_definitions(blep_cpp INTERFACE RAINBOW_VERSION=1)
 endif()
 
 if(DEFINED GF16_LOOKUP)

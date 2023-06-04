@@ -2,7 +2,7 @@ add_executable(rainbow_offver_benchmark rainbow_offver_benchmark.cpp)
 add_executable(rainbow_ver_benchmark rainbow_ver_benchmark.cpp)
 
 target_link_libraries(rainbow_offver_benchmark PUBLIC blep_cpp)
-target_compile_definitions(rainbow_offver_benchmark PRIVATE RAINBOW_VERSION=1 PROJECT_DIR=${PROJECT_SOURCE_DIR})
+target_compile_definitions(rainbow_offver_benchmark PRIVATE PROJECT_DIR=${PROJECT_SOURCE_DIR})
 
 target_link_libraries(rainbow_ver_benchmark PUBLIC blep_cpp)
-target_compile_definitions(rainbow_ver_benchmark PRIVATE RAINBOW_VERSION=1 PROJECT_DIR=${PROJECT_SOURCE_DIR})
+target_compile_definitions(rainbow_ver_benchmark PRIVATE PROJECT_DIR=${PROJECT_SOURCE_DIR})

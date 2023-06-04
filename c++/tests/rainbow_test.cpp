@@ -13,7 +13,7 @@ char const *message_path = STR(PROJECT_DIR) "/tmp/debug.gdb";
 
 using Rainbow::gf;
 
-int main(int argc, char *argv[]) {
+int main() {
     unsigned char salt[Rainbow::SALT_SIZE];
 
     MatrixDS<gf> PK = Rainbow::get_public_key_from_file(pk_path);

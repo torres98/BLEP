@@ -108,5 +108,5 @@ bool gf16::operator!=(const gf16 &b) const {
 }
 
 std::ostream& operator<<(std::ostream &s, const gf16 &a) {
-    return s << a.v_;
+    return s << (unsigned short) a.v_;
 }

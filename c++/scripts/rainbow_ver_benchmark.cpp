@@ -11,8 +11,13 @@
 
 #if RAINBOW_VERSION == 1
     #define SIG_SIZE Rainbow::n_variables / 2
+    #define RB_VER "I"
+#elif RAINBOW_VERSION == 2
+    #define SIG_SIZE Rainbow::n_variables
+    #define RB_VER "III"
 #else
     #define SIG_SIZE Rainbow::n_variables
+    #define RB_VER "V"
 #endif
 
 #define STR_IMPL_(x) #x
@@ -30,7 +35,7 @@ using std::chrono::duration;
 
 int main(int argc, char *argv[]) {
     if (argc != 4) {
-        std::cerr << "Wrong number of arguments." << std::endl;
+        std::cerr << "Expected 3 args: k (#svk rows) t (#progressive steps) s (sample size)." << std::endl;
         return -1;
     }
 
@@ -89,6 +94,8 @@ int main(int argc, char *argv[]) {
             }
         }
     }
+
+    std::cout << "Rainbow " RB_VER " verification benchmark\n" << std::endl ;
 
     std::cout << "EFFICIENT VERIFICATION STATS (" << k << " SVK rows)" << std::endl;
     std::cout << "Error percentage: " << (long double) eff_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;

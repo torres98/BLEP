@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [[ $# -ne 2 ]]; then
-    echo "Expected 2 argument, got $#."
+    echo "Expected 2 args: k (#svk rows) t (#progressive steps)"
     exit -1
 fi
 
@@ -9,6 +9,8 @@ if [[ $1 -lt $2 ]]; then
     echo "Number of rows of the SVK cannot be less than the number of progressive steps."
     exit -1
 fi
+
+cd ../
 
 for VERSION in {1..3}
 do

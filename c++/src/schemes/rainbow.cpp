@@ -98,7 +98,7 @@ MatrixDS<gf> Rainbow::get_public_key_from_file(const char *pk_path) {
     #if RAINBOW_VERSION == 1
         for (unsigned int j=0; j < N; j++) {
             for (unsigned int i=0; i < n_polynomials; i++) {
-                unsigned char temp_char;
+                int temp_char;
                 
                 if ((temp_char = fgetc(pk_file)) == EOF) {
                     throw std::runtime_error("Premature EOF when parsing Rainbow public key file");

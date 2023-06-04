@@ -4,7 +4,7 @@
 
 #if !(defined GF256_LOOKUP) || GF256_LOOKUP == 0
     #include "gf_operations.h"
-#elif GF256_LOOKUP == 1 || GF256_LOOKUP == 2 || GF256_LOOKUP == 3 || GF256_LOOKUP == 3
+#elif GF256_LOOKUP == 1 || GF256_LOOKUP == 2 || GF256_LOOKUP == 3 || GF256_LOOKUP == 4
     #include "gf256_lookup.h"
 #else
     #error "Lookup level not recognized (choose between 0, 1, 2, 3 and 4)"
@@ -108,5 +108,5 @@ bool gf256::operator!=(const gf256 &b) const {
 }
 
 std::ostream& operator<<(std::ostream &s, const gf256 &a) {
-    return s << a.v_;
+    return s << (unsigned short) a.v_;
 }

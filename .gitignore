@@ -1,9 +1,10 @@
 # folders
-__pycache__
-tmp
-.vscode
-build
-CMakeFiles
+__pycache__/
+tmp/
+.vscode/
+build/
+CMakeFiles/
+Testing/
 
 #for binary files
 *.out

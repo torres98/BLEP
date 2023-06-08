@@ -10,8 +10,6 @@
     #error "Lookup level not recognized (choose between 0, 1, 2, 3 and 4)"
 #endif
 
-gf16::gf16(uint8_t v)
-    : v_(v & 0xf) {}
 
 #if !(defined GF16_LOOKUP) || GF16_LOOKUP == 0
     gf16 gf16::operator+(const gf16 &b) const {

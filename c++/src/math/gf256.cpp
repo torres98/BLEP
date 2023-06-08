@@ -11,9 +11,6 @@
 #endif
 
 
-gf256::gf256(uint8_t v) :
-    v_(v) {}
-
 #if !(defined GF256_LOOKUP) || GF256_LOOKUP == 0
     gf256 gf256::operator+(const gf256 &b) const {
         return gf256(gf256_add(v_, b.v_));

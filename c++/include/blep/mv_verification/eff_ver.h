@@ -21,23 +21,21 @@
  *        the number of rows of the verification key.
  */
 template <typename Element>
-std::tuple<MatrixDS<Element>, MatrixDS<Element>> offVer(const MatrixDS<Element> &VK, uint16_t k) {
-    uint16_t vk_nrows = VK.nrows();
-
-    if (k > vk_nrows) {
+std::pair<MatrixDS<Element>, MatrixDS<Element>> offVer(const MatrixDS<Element> &VK, uint16_t k) {
+    if (k > VK.nrows()) {
         std::ostringstream error_log;
-        error_log << "Security parameter k (" << k << ") can't be bigger than the number of rows of the verification key (" << vk_nrows << ")";
+        error_log << "Security parameter k (" << k << ") can't be bigger than the number of rows of the verification key (" << VK.nrows() << ")";
         throw std::invalid_argument(error_log.str());
     }
 
-    MatrixDS<Element> C = MatrixDS<Element>(k, vk_nrows), SVK;
+    MatrixDS<Element> C = MatrixDS<Element>(k, VK.nrows()), SVK;
 
     do {
         fill_matrix_randomly(C);
         SVK = C * VK;
     } while(!SVK.has_full_row_rank());
 
-    return std::make_tuple(C, SVK);
+    return std::make_pair(C, SVK);
 }
 
 /**

@@ -1,11 +1,9 @@
-#include <cassert>
-
-#include "blep/utils/rand.h"
 #include "blep/schemes/rainbow.h"
 #include "blep/mv_verification/std_ver.h"
 #include "blep/mv_verification/eff_ver.h"
 #include "blep/mv_verification/prog_ver.h"
 
+#define assert(e) if (e == false) return 1
 #define STR_IMPL_(x) #x
 #define STR(x) STR_IMPL_(x)
 
@@ -45,14 +43,13 @@ int main(int argc, char *argv[]) {
 
     // for efficient verification
     auto [C,  SVK] = offVer(PK, k);
-
     VectorDS<gf> u_eff = C * u;
 
     assert(verify_signature(SVK, s, u_eff));
     std::cout << "Efficiently verified the Rainbow signature." << std::endl;
 
     // for progressive verification
-    assert(progVer(PK, s, u, t, true) == true);
+    assert(progVer(PK, s, u, t, true));
     std::cout << "Progressively verified the Rainbow signature." << std::endl;
 
     assert(progVer(SVK, s, u_eff, t, true));

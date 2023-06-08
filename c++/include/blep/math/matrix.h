@@ -34,9 +34,9 @@ class MatrixDS {
             this -> columns = columns;
 
             if (init)
-                this -> M = new Element[rows * columns]();
+                this -> M = new Element[size()]();
             else
-                this -> M = new Element[rows * columns];
+                this -> M = new Element[size()];
 
             this -> is_memory_static = false;
         }
@@ -62,11 +62,11 @@ class MatrixDS {
         MatrixDS(const MatrixDS& A) {
             this -> rows = A.rows;
             this -> columns = A.columns;
-            this -> M = new Element[rows * columns];
+            this -> M = new Element[size()];
 
             this -> is_memory_static = false;
 
-            std::copy(A.M, A.M + rows * columns, this -> M);
+            std::copy(A.M, A.M + A.size(), this -> M);
         }
 
         /**
@@ -295,8 +295,9 @@ class MatrixDS {
             
             for (uint16_t i = 0; i < n; i++)
                 for (uint16_t j = 0; j < m; j++)
-                    for (uint16_t h = 0; h < p; h++)
-                        O.M[i*m + j] += (this -> M)[i*p + h] * A.M[h*m + j];
+                    for (uint16_t h = 0; h < p; h++) {
+                        O.M[i*m + j] = O.M[i*m + j] + ((this -> M)[i*p + h] * A.M[h*m + j]);
+                    }
 
             return O;
         }
@@ -320,7 +321,7 @@ class MatrixDS {
                 this -> M = new Element[A.size()];
             }
 
-            std::copy(A.M, A.M + rows * columns, this -> M);
+            std::copy(A.M, A.M + A.size(), this -> M);
 
             return *this;
         }

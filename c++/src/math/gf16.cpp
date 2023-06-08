@@ -10,9 +10,8 @@
     #error "Lookup level not recognized (choose between 0, 1, 2, 3 and 4)"
 #endif
 
-
-gf16::gf16(uint8_t v) :
-    v_(v) {}
+gf16::gf16(uint8_t v)
+    : v_(v & 0xf) {}
 
 #if !(defined GF16_LOOKUP) || GF16_LOOKUP == 0
     gf16 gf16::operator+(const gf16 &b) const {
@@ -34,8 +33,8 @@ gf16::gf16(uint8_t v) :
 
 #elif GF16_LOOKUP == 1 || GF16_LOOKUP == 2
     //      get_add_index(i, j) ((i*(31 - i))  / 2) + (j - i - 1)
-    #define get_add_index(i, j) ((i*(0x1f - i)) >> 1) + (j - i - 1)
-    //#define get_mul_index(i, j) 15*(i-1) + ((i*(3 - i)) / 2) + (j - i) - 1
+    #define get_add_index(i, j) ((i*(31 - i)) >> 1) + (j - i - 1)
+    //      get_mul_index(i, j) 15*(i-1) + ((i*(3 - i))  / 2) + (j - i) - 1
     #define get_mul_index(i, j) 15*(i-1) + ((i*(3 - i)) >> 1) + (j - i) - 1
 
     gf16 gf16::operator+(const gf16 &b) const {

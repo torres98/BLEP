@@ -21,12 +21,12 @@ do
         GF="GF256"
     fi
 
-    for LOOKUP in {0..2}
+    for LOOKUP in 0 2 4
     do
         echo "Testing Rainbow $VERSION with lookup level $LOOKUP"
 
         cmake . -B=build/ -DRAINBOW_VERSION=$VERSION -D$GF\_LOOKUP=$LOOKUP > /dev/null 2>&1
-        cmake --build build/ --target rainbow_test  > /dev/null 2>&1
+        cmake --build build/ --target rainbow_test > /dev/null 2>&1
 
         ./build/tests/rainbow_test $1 $2
         echo

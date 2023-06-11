@@ -1,24 +1,32 @@
-#include <assert.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-#include "../include/random_utils.h"
-#include "../include/rainbow.h"
-#include "../include/standard_verification.h"
-#include "../include/efficient_verification.h"
-#include "../include/progressive_verification.h"
+#include "blep/utils/rand.h"
+#include "blep/schemes/rainbow.h"
+#include "blep/mv_verification/std_ver.h"
+#include "blep/mv_verification/eff_ver.h"
+#include "blep/mv_verification/prog_ver.h"
 
+#if RAINBOW_VERSION == 1
+    #define RAINBOW_VERSION_STR "I"
+    #define GF_LOOKUP GF16_LOOKUP
+#elif RAINBOW_VERSION == 2
+    #define RAINBOW_VERSION_STR "III"
+    #define GF_LOOKUP GF256_LOOKUP
+#else
+    #define RAINBOW_VERSION_STR "V"
+    #define GF_LOOKUP GF256_LOOKUP
+#endif
 
 #define CLOCK_TO_AVG_MICROSECONDS(clocks, n) (clocks * (1000000.0L / n)) / CLOCKS_PER_SEC
-
 #define STR_IMPL_(x) #x
 #define STR(x) STR_IMPL_(x)
 
-char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk" STR(RAINBOW_VERSION) ".txt";
-char const *signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature" STR(RAINBOW_VERSION) ".txt";
-char const *message_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb";
+char const *pk_path = STR(PROJECT_DIR) "/../rainbow_examples/pk" STR(RAINBOW_VERSION) ".txt";
+char const *signature_path = STR(PROJECT_DIR) "/../rainbow_examples/signature" STR(RAINBOW_VERSION) ".txt";
+char const *message_path = STR(PROJECT_DIR) "/../rainbow_examples/message.txt";
 
 unsigned char salt[SALT_SIZE];
 
@@ -41,8 +49,8 @@ int main(int argc, char *argv[]) {
 
     //srand((unsigned int) time(NULL)); fix
 
-    MatrixDS* PK = parse_public_key(pk_path);
-    MatrixDS* s = parse_signature(signature_path, salt);
+    MatrixDS* PK = get_public_key_from_file(pk_path);
+    MatrixDS* s = get_signature_from_file(signature_path, salt);
 
     MatrixDS* u = get_result_vector(message_path, salt);
     
@@ -85,20 +93,22 @@ int main(int argc, char *argv[]) {
         }
     }
 
+    printf("Rainbow " RAINBOW_VERSION_STR " (lookup level " STR(GF_LOOKUP) ")\n");
+
     printf("EFFICIENT VERIFICATION STATS (%u SVK rows)\n", k);
-    printf("Error percentage: %Lf%%\n", (long double) eff_error_count / SAMPLE_SIZE * 100);
-    printf("Security bits: %f\n", ((eff_error_count == 0) ? 0: log2((long double) eff_error_count / SAMPLE_SIZE)));
-    printf("Average verification time: %.3Lf microseconds\n\n", CLOCK_TO_AVG_MICROSECONDS(eff_clocks, SAMPLE_SIZE));
+    printf("Error percentage: %.4Lf%%\n", (long double) eff_error_count / SAMPLE_SIZE * 100);
+    printf("Security bits: %.4f\n", ((eff_error_count == 0) ? 0: log2((long double) eff_error_count / SAMPLE_SIZE)));
+    printf("Average verification time: %.0Lf microseconds\n\n", CLOCK_TO_AVG_MICROSECONDS(eff_clocks, SAMPLE_SIZE));
 
     printf("PROGRESSIVE VERIFICATION STATS (%u progressive steps)\n", t);
-    printf("Error percentage: %Lf%%\n", (long double) prog_error_count / SAMPLE_SIZE * 100);
-    printf("Security bits: %f\n", ((prog_error_count == 0) ? 0: log2((long double) prog_error_count / SAMPLE_SIZE)));
-    printf("Average verification time: %.3Lf microseconds\n\n", CLOCK_TO_AVG_MICROSECONDS(prog_clocks, SAMPLE_SIZE));
+    printf("Error percentage: %.4Lf%%\n", (long double) prog_error_count / SAMPLE_SIZE * 100);
+    printf("Security bits: %.4f\n", ((prog_error_count == 0) ? 0: log2((long double) prog_error_count / SAMPLE_SIZE)));
+    printf("Average verification time: %.0Lf microseconds\n\n", CLOCK_TO_AVG_MICROSECONDS(prog_clocks, SAMPLE_SIZE));
 
     printf("EFFICIENT+PROGRESSIVE VERIFICATION STATS (%u SVK rows, %u progressive steps)\n", k, t);
-    printf("Error percentage: %Lf%%\n", (long double) effprog_error_count / SAMPLE_SIZE * 100);
-    printf("Security bits: %f\n", ((effprog_error_count == 0) ? 0: log2((long double) effprog_error_count / SAMPLE_SIZE)));
-    printf("Average verification time: %.3Lf microseconds\n", CLOCK_TO_AVG_MICROSECONDS(effprog_clocks, SAMPLE_SIZE));
+    printf("Error percentage: %.4Lf%%\n", (long double) effprog_error_count / SAMPLE_SIZE * 100);
+    printf("Security bits: %.4f\n", ((effprog_error_count == 0) ? 0: log2((long double) effprog_error_count / SAMPLE_SIZE)));
+    printf("Average verification time: %.0Lf microseconds\n", CLOCK_TO_AVG_MICROSECONDS(effprog_clocks, SAMPLE_SIZE));
 
     destroy_matrix(PK);
     destroy_matrix(s);

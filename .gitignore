@@ -1,6 +1,5 @@
 # folders
 __pycache__/
-tmp/
 .vscode/
 build/
 CMakeFiles/

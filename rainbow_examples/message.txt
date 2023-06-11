@@ -1,0 +1,19 @@
+b main
+br *0x080491da
+run < in.txt
+
+#print content of saved eip
+p/x *0xbffff14c 
+
+c
+
+#insert input
+
+#print content of saved eip
+printf "return address content: "
+p/x *0xbffff14c
+printf "shellcode location: \n"
+p/x *0xbffff150
+p/x *0xbffff154
+p/x *0xbffff158
+p/x *0xbffff15c

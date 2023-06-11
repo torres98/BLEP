@@ -1,30 +1,33 @@
-#include <assert.h>
-#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>
 
-#include "../include/random_utils.h"
-#include "../include/rainbow.h"
-#include "../include/standard_verification.h"
-#include "../include/efficient_verification.h"
-#include "../include/progressive_verification.h"
+#include "blep/utils/rand.h"
+#include "blep/schemes/rainbow.h"
+#include "blep/mv_verification/std_ver.h"
+#include "blep/mv_verification/eff_ver.h"
+#include "blep/mv_verification/prog_ver.h"
 
+#if RAINBOW_VERSION == 1
+    #define RAINBOW_VERSION_STR "I"
+    #define GF_LOOKUP GF16_LOOKUP
+#elif RAINBOW_VERSION == 2
+    #define RAINBOW_VERSION_STR "III"
+    #define GF_LOOKUP GF256_LOOKUP
+#else
+    #define RAINBOW_VERSION_STR "V"
+    #define GF_LOOKUP GF256_LOOKUP
+#endif
 
 #define CLOCK_TO_AVG_MICROSECONDS(clocks, n) (clocks * (1000000.0L / n)) / CLOCKS_PER_SEC
-
 #define STR_IMPL_(x) #x
 #define STR(x) STR_IMPL_(x)
 
-char const *pk_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/pk" STR(RAINBOW_VERSION) ".txt";
-char const *signature_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/signature" STR(RAINBOW_VERSION) ".txt";
-char const *message_path = "/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb";
-
-unsigned char salt[SALT_SIZE];
+char const *pk_path = STR(PROJECT_DIR) "/../rainbow_examples/pk" STR(RAINBOW_VERSION) ".txt";
 
 int main(int argc, char *argv[]) {
     if (argc != 3) {
-        fprintf(stderr, "Wrong number of arguments.\n");
+        fprintf(stderr, "Expected 2 args: k (#svk rows) s (#runs).\n");
         return -1;
     }
 
@@ -36,7 +39,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
-    MatrixDS* PK = parse_public_key(pk_path);
+    MatrixDS* PK = get_public_key_from_file(pk_path);
 
     MatrixDS *C = CreateMatrix(k, nrows(PK), false);
 
@@ -49,7 +52,8 @@ int main(int argc, char *argv[]) {
         destroy_matrix(svk);
     }
 
-    printf("Average offVer time (%u SVK rows): %Lf\n", k, (long double) CLOCK_TO_AVG_MICROSECONDS(offver_clocks, SAMPLE_SIZE));
+    printf("Rainbow " RAINBOW_VERSION_STR " (lookup level " STR(GF_LOOKUP) ")\n");
+    printf("Average SVK generation time (%u SVK rows): %.0Lf microseconds\n", k, (long double) CLOCK_TO_AVG_MICROSECONDS(offver_clocks, SAMPLE_SIZE));
 
     destroy_matrix(PK);
     destroy_matrix(C);

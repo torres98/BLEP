@@ -10,6 +10,11 @@ if [[ $1 -lt $2 ]]; then
     exit 1
 fi
 
+if [[ $3 -lt 1 ]]; then
+    echo "Number of runs must be a positive value."
+    exit 1
+fi
+
 cd ../
 set -e
 

@@ -19,7 +19,6 @@ add_subdirectory(tests/)
 add_subdirectory(scripts/)
 
 if(DEFINED RAINBOW_VERSION)
-    message(${RAINBOW_VERSION})
     target_compile_definitions(blep_cpp PUBLIC RAINBOW_VERSION=${RAINBOW_VERSION})
 else()
     target_compile_definitions(blep_cpp PUBLIC RAINBOW_VERSION=1)
@@ -34,3 +33,13 @@ if(DEFINED GF256_LOOKUP)
 endif()
 
 target_include_directories(blep_cpp PUBLIC ${PROJECT_SOURCE_DIR}/include)
+
+# for rainbow tests
+target_include_directories(blep_rainbowI_test_cpp PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_compile_definitions(blep_rainbowI_test_cpp PUBLIC RAINBOW_VERSION=1)
+
+target_include_directories(blep_rainbowIII_test_cpp PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_compile_definitions(blep_rainbowIII_test_cpp PUBLIC RAINBOW_VERSION=2)
+
+target_include_directories(blep_rainbowV_test_cpp PUBLIC ${PROJECT_SOURCE_DIR}/include)
+target_compile_definitions(blep_rainbowV_test_cpp PUBLIC RAINBOW_VERSION=3)

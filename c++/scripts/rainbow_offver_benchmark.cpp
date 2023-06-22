@@ -6,11 +6,21 @@
 #include "blep/schemes/rainbow.h"
 #include "blep/utils/rand.h"
 
+#if RAINBOW_VERSION == 1
+    #define RAINBOW_VERSION_STR "I"
+    #define GF_LOOKUP GF16_LOOKUP
+#elif RAINBOW_VERSION == 2
+    #define RAINBOW_VERSION_STR "III"
+    #define GF_LOOKUP GF256_LOOKUP
+#else
+    #define RAINBOW_VERSION_STR "V"
+    #define GF_LOOKUP GF256_LOOKUP
+#endif
 
 #define STR_IMPL_(x) #x
 #define STR(x) STR_IMPL_(x)
 
-char const *pk_path = STR(PROJECT_DIR) "/tmp/pk" STR(RAINBOW_VERSION) ".txt";
+char const *pk_path = STR(PROJECT_DIR) "/../rainbow_examples/pk" STR(RAINBOW_VERSION) ".txt";
 
 unsigned char salt[Rainbow::SALT_SIZE];
 
@@ -40,7 +50,8 @@ int main(int argc, char *argv[]) {
         auto [C, svk] = offVer(PK, k);
         offver_time += duration<long double, std::micro>(high_resolution_clock::now() - starting_time).count();
     }
-
+    
+    std::cout << "Rainbow " << RAINBOW_VERSION_STR << " offVer benchmark (lookup level " << GF_LOOKUP << ")" << std::endl;
     std::cout << "Average offVer time (" << k << " SVK rows): " << offver_time / SAMPLE_SIZE << " microseconds" << std::endl;
 
     return 0;

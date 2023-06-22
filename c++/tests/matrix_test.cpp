@@ -1,14 +1,13 @@
-#include <cassert>
-
 #include "blep/math/matrix.h"
 #include "blep/utils/rand.h"
 #include "blep/math/vector.h"
 
 #include "matrix_samples.h"
 
+#define assert(e) if ((e) == 0) { std::cout << "FAILED" << std::endl; return 1; }
 
 int main() {
-    //MatrixDS
+    std::cout << "Matrix test: ";
 
     //Main constructor
     MatrixDS<int> M_int = MatrixDS<int>(80, 80, true);
@@ -50,7 +49,7 @@ int main() {
     assert(!MatrixDS<int>((int*) A3, 3, 3).has_full_row_rank());
     assert(MatrixDS<int>((int*) A4, 3, 3).has_full_row_rank());
 
-
+    std::cout << "PASSED" << std::endl;
     //VectorDS
 
     //Assignment operator

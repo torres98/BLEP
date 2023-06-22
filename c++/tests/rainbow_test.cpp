@@ -3,35 +3,31 @@
 #include "blep/mv_verification/eff_ver.h"
 #include "blep/mv_verification/prog_ver.h"
 
-#define assert(e) if (e == false) return 1
+#if RAINBOW_VERSION == 1
+    #define RAINBOW_VERSION_STR "I"
+    #define GF_LOOKUP GF16_LOOKUP
+#elif RAINBOW_VERSION == 2
+    #define RAINBOW_VERSION_STR "III"
+    #define GF_LOOKUP GF256_LOOKUP
+#else
+    #define RAINBOW_VERSION_STR "V"
+    #define GF_LOOKUP GF256_LOOKUP
+#endif
+
+#define assert(e) if ((e) == 0) { std::cout << "FAILED" << std::endl; return 1; }
 #define STR_IMPL_(x) #x
 #define STR(x) STR_IMPL_(x)
 
-char const *pk_path = STR(PROJECT_DIR) "/tmp/pk" STR(RAINBOW_VERSION) ".txt";
-char const *signature_path = STR(PROJECT_DIR) "/tmp/signature" STR(RAINBOW_VERSION) ".txt";
-char const *message_path = STR(PROJECT_DIR) "/tmp/debug.gdb";
+char const *pk_path = STR(PROJECT_DIR) "/../rainbow_examples/pk" STR(RAINBOW_VERSION) ".txt";
+char const *signature_path = STR(PROJECT_DIR) "/../rainbow_examples/signature" STR(RAINBOW_VERSION) ".txt";
+char const *message_path = STR(PROJECT_DIR) "/../rainbow_examples/message.txt";
 
 using Rainbow::gf;
 
-int main(int argc, char *argv[]) {
+unsigned char salt[Rainbow::SALT_SIZE];
 
-    if (argc != 3) {
-        std::cerr << "Wrong number of arguments." << std::endl;
-        exit(1);
-    }
-
-    uint16_t k = strtoul(argv[1], NULL, 10);
-    uint16_t t = strtoul(argv[2], NULL, 10);
-    
-    if (k > Rainbow::n_polynomials) {
-        std::cerr << "The number of rows of the SVK (" << k << ") can't be bigger than the number of rows of the PK (" << Rainbow::n_polynomials << ")." << std::endl;
-        return 1;
-    } else if (t > k) {
-        std::cerr << "The number of progressive steps (" << t << ") can't be bigger than the number of rows of the SVK (" << k << ")." << std::endl;
-        return 1;
-    }
-
-    unsigned char salt[Rainbow::SALT_SIZE];
+int main() {
+    std::cout << "Rainbow " RAINBOW_VERSION_STR " Standard Verification Test: ";
 
     MatrixDS<gf> PK = Rainbow::get_public_key_from_file(pk_path);
     VectorDS<gf> s = Rainbow::get_signature_from_file(signature_path, salt);
@@ -39,21 +35,26 @@ int main(int argc, char *argv[]) {
     VectorDS<gf> u = Rainbow::get_result_vector_from_file(message_path, salt);
 
     assert(verify_signature(PK, s, u));
-    std::cout << "Successfully verified the Rainbow signature." << std::endl;
+    std::cout << "PASSED" << std::endl;
 
     // for efficient verification
+    std::cout << "Rainbow " RAINBOW_VERSION_STR " Efficient Verification Test: ";
+    uint16_t k = Rainbow::n_polynomials / 2;
     auto [C,  SVK] = offVer(PK, k);
     VectorDS<gf> u_eff = C * u;
 
     assert(verify_signature(SVK, s, u_eff));
-    std::cout << "Efficiently verified the Rainbow signature." << std::endl;
+    std::cout << "PASSED" << std::endl;
 
     // for progressive verification
+    std::cout << "Rainbow " RAINBOW_VERSION_STR " Progressive Verification Test: ";
+    uint16_t t = Rainbow::n_polynomials / 2;
     assert(progVer(PK, s, u, t, true));
-    std::cout << "Progressively verified the Rainbow signature." << std::endl;
+    std::cout << "PASSED" << std::endl;
 
+    std::cout << "Rainbow " RAINBOW_VERSION_STR " Efficient+Progressive Verification Test: ";
     assert(progVer(SVK, s, u_eff, t, true));
-    std::cout << "Efficiently and progressively verified the Rainbow signature." << std::endl;
+    std::cout << "PASSED" << std::endl;
 
     return 0;
 }

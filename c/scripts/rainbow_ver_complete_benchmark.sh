@@ -22,12 +22,13 @@ do
 
     for LOOKUP in 0 2 4
     do
-        cmake . -B=build/ -DRAINBOW_VERSION=$VERSION -D$GF\_LOOKUP=$LOOKUP > /dev/null 2>&1
-        cmake --build build/ --target rainbow_benchmark > /dev/null 2>&1
+        cmake . -B=build_script/ -DRAINBOW_VERSION=$VERSION -D$GF\_LOOKUP=$LOOKUP > /dev/null 2>&1
+        cmake --build build_script/ --target rainbow_benchmark > /dev/null 2>&1
 
-        ./build/scripts/rainbow_benchmark $1 $2 $3
+        ./build_script/scripts/rainbow_benchmark $1 $2 $3
         echo "-------------------------------------------------------------"
     done
 done
 
-cmake --build build/ --target clean
+cmake --build build_script/ --target clean
+rm -rf build_script

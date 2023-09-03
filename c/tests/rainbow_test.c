@@ -28,26 +28,7 @@ char const *message_path = STR(PROJECT_DIR) "/../rainbow_examples/message.txt";
 
 unsigned char salt[SALT_SIZE];
 
-int main(int argc, char *argv[]) {
-
-    if (argc != 3) {
-        fprintf(stderr, "Wrong number of arguments.\n");
-        return 1;
-    }
-
-    uint16_t k = strtoul(argv[1], NULL, 10);
-    uint16_t t = strtoul(argv[2], NULL, 10);
-    
-    if (k > n_polynomials) {
-        fprintf(stderr, "The number of rows of the SVK (%u) can't be bigger than the number of rows of the PK (%u)\n", k, n_polynomials);
-        return 1;
-    } else if (t > k) {
-        fprintf(stderr, "The number of progressive steps (%u) can't be bigger than the number of rows of the SVK (%u)\n", t, k);
-        return 1;
-    }
-
-    //srand((unsigned int) time(NULL)); maybe put it back if needed
-
+int main() {
     MatrixDS* PK = get_public_key_from_file(pk_path);
     MatrixDS* s = get_signature_from_file(signature_path, salt);
     MatrixDS* u = get_result_vector(message_path, salt);
@@ -58,6 +39,7 @@ int main(int argc, char *argv[]) {
     printf("Successfully verified the Rainbow signature.\n");
     
     // for efficient verification
+    uint16_t k = n_polynomials / 2;
     MatrixDS *C = CreateMatrix(k, nrows(PK), false);
     MatrixDS *SVK = offVer(PK, C, k);
     MatrixDS *u_eff = dot_product(C, u);
@@ -66,6 +48,8 @@ int main(int argc, char *argv[]) {
     printf("Efficiently verified the Rainbow signature.\n");
 
     // for progressive verification
+    uint16_t t = n_polynomials / 2;
+
     assert(progVer_with_result_vector(PK, s, u, t, true) == true);
     printf("Progressively verified the Rainbow signature.\n");
 

@@ -1,6 +1,6 @@
-add_executable(rainbow_benchmark rainbow_benchmark.c)
-target_link_libraries(rainbow_benchmark PUBLIC blep_c m)
-target_compile_definitions(rainbow_benchmark PRIVATE PROJECT_DIR=${PROJECT_SOURCE_DIR})
+add_executable(rainbow_ver_benchmark rainbow_ver_benchmark.c)
+target_link_libraries(rainbow_ver_benchmark PUBLIC blep_c m)
+target_compile_definitions(rainbow_ver_benchmark PRIVATE PROJECT_DIR=${PROJECT_SOURCE_DIR})
 
 add_executable(rainbow_offver_benchmark rainbow_offver_benchmark.c)
 target_link_libraries(rainbow_offver_benchmark PUBLIC blep_c)

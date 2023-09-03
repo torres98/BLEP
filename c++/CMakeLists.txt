@@ -12,10 +12,7 @@ cmake_minimum_required(VERSION 3.22)
 
 find_package(OpenSSL REQUIRED)
 
-enable_testing()
-
 add_subdirectory(src/)
-add_subdirectory(tests/)
 add_subdirectory(scripts/)
 
 if(DEFINED RAINBOW_VERSION)
@@ -34,12 +31,17 @@ endif()
 
 target_include_directories(blep_cpp PUBLIC ${PROJECT_SOURCE_DIR}/include)
 
-# for rainbow tests
-target_include_directories(blep_rainbowI_test_cpp PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_compile_definitions(blep_rainbowI_test_cpp PUBLIC RAINBOW_VERSION=1)
+if(ENABLE_TESTS)
+    enable_testing()
+    add_subdirectory(tests/)
 
-target_include_directories(blep_rainbowIII_test_cpp PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_compile_definitions(blep_rainbowIII_test_cpp PUBLIC RAINBOW_VERSION=2)
+    # for rainbow tests
+    target_include_directories(blep_cpp_rainbowI_test PUBLIC ${PROJECT_SOURCE_DIR}/include)
+    target_compile_definitions(blep_cpp_rainbowI_test PUBLIC RAINBOW_VERSION=1)
 
-target_include_directories(blep_rainbowV_test_cpp PUBLIC ${PROJECT_SOURCE_DIR}/include)
-target_compile_definitions(blep_rainbowV_test_cpp PUBLIC RAINBOW_VERSION=3)
+    target_include_directories(blep_cpp_rainbowIII_test PUBLIC ${PROJECT_SOURCE_DIR}/include)
+    target_compile_definitions(blep_cpp_rainbowIII_test PUBLIC RAINBOW_VERSION=2)
+
+    target_include_directories(blep_cpp_rainbowV_test PUBLIC ${PROJECT_SOURCE_DIR}/include)
+    target_compile_definitions(blep_cpp_rainbowV_test PUBLIC RAINBOW_VERSION=3)
+endif()

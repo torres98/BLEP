@@ -13,21 +13,21 @@
 
 #if RAINBOW_VERSION == 1
     #define SIG_SIZE Rainbow::n_variables / 2
-    #define RB_VER "I"
+    #define RAINBOW_VERSION_STR "I"
     #define GF_LOOKUP STR(GF16_LOOKUP)
 #elif RAINBOW_VERSION == 2
     #define SIG_SIZE Rainbow::n_variables
-    #define RB_VER "III"
+    #define RAINBOW_VERSION_STR "III"
     #define GF_LOOKUP STR(GF256_LOOKUP)
 #else
     #define SIG_SIZE Rainbow::n_variables
-    #define RB_VER "V"
+    #define RAINBOW_VERSION_STR "V"
     #define GF_LOOKUP STR(GF256_LOOKUP)
 #endif
 
-char const *pk_path = STR(PROJECT_DIR) "/tmp/pk" STR(RAINBOW_VERSION) ".txt";
-char const *signature_path = STR(PROJECT_DIR) "/tmp/signature" STR(RAINBOW_VERSION) ".txt";
-char const *message_path = STR(PROJECT_DIR) "/tmp/debug.gdb";
+char const *pk_path = STR(PROJECT_DIR) "/../rainbow_examples/pk" STR(RAINBOW_VERSION) ".txt";
+char const *signature_path = STR(PROJECT_DIR) "/../rainbow_examples/signature" STR(RAINBOW_VERSION) ".txt";
+char const *message_path = STR(PROJECT_DIR) "/../rainbow_examples/message.txt";
 
 unsigned char salt[Rainbow::SALT_SIZE];
 
@@ -97,7 +97,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    std::cout << "Rainbow " RB_VER " verification benchmark (lookup level " GF_LOOKUP ")\n" << std::endl ;
+    std::cout << "Rainbow " RAINBOW_VERSION_STR " verification benchmark (lookup level " GF_LOOKUP ")\n" << std::endl ;
 
     std::cout << "EFFICIENT VERIFICATION STATS (" << k << " SVK rows)" << std::endl;
     std::cout << "Error percentage: " << (long double) eff_error_count / SAMPLE_SIZE * 100 << "%" << std::endl;

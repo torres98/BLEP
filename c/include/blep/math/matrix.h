@@ -5,18 +5,6 @@
     #error "Matrix element type not defined"
 #endif
 
-#ifndef ELEM_ADD
-    #define ELEM_ADD(a, b) (a + b)
-#endif
-
-#ifndef ELEM_SUB
-    #define ELEM_SUB(a, b) (a - b)
-#endif
-
-#ifndef ELEM_MUL
-    #define ELEM_MUL(a, b) (a * b)
-#endif
-
 #include <stdbool.h>
 #include <stdint.h>
 

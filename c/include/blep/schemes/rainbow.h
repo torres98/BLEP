@@ -3,8 +3,6 @@
 
 #include <stddef.h>
 
-#include "blep/math/matrix.h"
-
 #ifndef RAINBOW_VERSION
     #define RAINBOW_VERSION 1
 #endif
@@ -35,6 +33,9 @@
 #endif
 
 #define SALT_SIZE 16 //maybe move to .c file
+
+#define ELEM_TYPE gf
+#include "blep/math/matrix.h"
 
 extern const unsigned short v1, o1, o2, q, n_variables, n_polynomials;
 extern const unsigned int N;

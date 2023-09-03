@@ -1,9 +1,9 @@
 add_executable(hash_test hash_test.c)
-target_link_libraries(hash_test PUBLIC blep_c)
+target_link_libraries(hash_test PRIVATE blep_c)
 add_test(hash_test hash_test)
 
 add_executable(matrix_test matrix_test.c)
-target_link_libraries(matrix_test PUBLIC blep_c_matrix_test)
+target_link_libraries(matrix_test PRIVATE blep_c_matrix_test)
 add_test(matrix_test matrix_test)
 
 add_executable(rainbowI_test rainbow_test.c)

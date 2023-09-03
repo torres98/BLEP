@@ -62,6 +62,6 @@ if(ENABLE_TESTS)
     target_compile_definitions(blep_c_rainbowV_test PUBLIC RAINBOW_VERSION=3 ELEM_TYPE=gf256 ELEM_BIT_SIZE=8)
 
     # matrix
-    target_compile_definitions(blep_c_matrix_test PUBLIC ELEM_TYPE=int ELEM_BIT_SIZE=32)
     target_include_directories(blep_c_matrix_test PUBLIC ${PROJECT_SOURCE_DIR}/include)
+    target_compile_definitions(blep_c_matrix_test PUBLIC ELEM_TYPE=int ELEM_BIT_SIZE=32)
 endif()

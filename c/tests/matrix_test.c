@@ -1,3 +1,4 @@
+#define ELEM_TYPE int
 #include "blep/math/matrix.h"
 
 #include "int_matrix_samples.h"

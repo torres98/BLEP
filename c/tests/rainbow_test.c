@@ -9,13 +9,25 @@
 
 #if RAINBOW_VERSION == 1
     #define RAINBOW_VERSION_STR "I"
-    #define GF_LOOKUP GF16_LOOKUP
+    #ifdef GF16_LOOKUP
+        #define GF_LOOKUP GF16_LOOKUP
+    #else
+        #define GF_LOOKUP 0
+    #endif
 #elif RAINBOW_VERSION == 2
     #define RAINBOW_VERSION_STR "III"
-    #define GF_LOOKUP GF256_LOOKUP
+    #ifdef GF256_LOOKUP
+        #define GF_LOOKUP GF256_LOOKUP
+    #else
+        #define GF_LOOKUP 0
+    #endif
 #else
     #define RAINBOW_VERSION_STR "V"
-    #define GF_LOOKUP GF256_LOOKUP
+    #ifdef GF256_LOOKUP
+        #define GF_LOOKUP GF256_LOOKUP
+    #else
+        #define GF_LOOKUP 0
+    #endif
 #endif
 
 #define assert(e) if ((e) == 0) return 1

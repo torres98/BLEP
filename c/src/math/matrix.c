@@ -7,6 +7,18 @@
 #include "blep/utils/memory.h"
 #include "blep/utils/rand.h"
 
+#ifndef ELEM_ADD
+    #define ELEM_ADD(a, b) (a + b)
+#endif
+
+#ifndef ELEM_SUB
+    #define ELEM_SUB(a, b) (a - b)
+#endif
+
+#ifndef ELEM_MUL
+    #define ELEM_MUL(a, b) (a * b)
+#endif
+
 //for now only 4 bits is accepted
 #if ELEM_BIT_SIZE == 4
     typedef struct {

@@ -30,9 +30,11 @@ bool verify_signature_with_result_vector(const MatrixDS* PK, const MatrixDS* s, 
 
     bool verification_result = true;
 
-    for (uint16_t i = 0; i < nrows(PK); i++)
-        if (row_vector_product(PK, s, i) != get(u, i, 0))
+    for (uint16_t i = 0; i < nrows(PK); i++) {
+        if (row_vector_product(PK, s, i) != get(u, i, 0)) {
             verification_result = false;
+        }
+    }
 
     return verification_result;
 }

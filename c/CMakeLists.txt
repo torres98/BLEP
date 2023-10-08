@@ -53,13 +53,16 @@ if(ENABLE_TESTS)
 
     # for rainbow tests
     target_include_directories(blep_c_rainbowI_test PUBLIC ${PROJECT_SOURCE_DIR}/include)
-    target_compile_definitions(blep_c_rainbowI_test PUBLIC RAINBOW_VERSION=1 ELEM_TYPE=gf16 ELEM_BIT_SIZE=4)
+    target_compile_definitions(blep_c_rainbowI_test PUBLIC
+        RAINBOW_VERSION=1 ELEM_TYPE=gf16 ELEM_BIT_SIZE=4 ELEM_ADD=gf16_add ELEM_MUL=gf16_mul)
 
     target_include_directories(blep_c_rainbowIII_test PUBLIC ${PROJECT_SOURCE_DIR}/include)
-    target_compile_definitions(blep_c_rainbowIII_test PUBLIC RAINBOW_VERSION=2 ELEM_TYPE=gf256 ELEM_BIT_SIZE=8)
+    target_compile_definitions(blep_c_rainbowIII_test PUBLIC
+        RAINBOW_VERSION=2 ELEM_TYPE=gf256 ELEM_BIT_SIZE=8 ELEM_ADD=gf256_add ELEM_MUL=gf256_mul)
 
     target_include_directories(blep_c_rainbowV_test PUBLIC ${PROJECT_SOURCE_DIR}/include)
-    target_compile_definitions(blep_c_rainbowV_test PUBLIC RAINBOW_VERSION=3 ELEM_TYPE=gf256 ELEM_BIT_SIZE=8)
+    target_compile_definitions(blep_c_rainbowV_test PUBLIC
+        RAINBOW_VERSION=3 ELEM_TYPE=gf256 ELEM_BIT_SIZE=8 ELEM_ADD=gf256_add ELEM_MUL=gf256_mul)
 
     # matrix
     target_include_directories(blep_c_matrix_test PUBLIC ${PROJECT_SOURCE_DIR}/include)

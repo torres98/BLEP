@@ -1,16 +1,14 @@
 **C++**
 -maybe fix size of mlen for sha
 
--check file pointer
-
--Including gf16.c from gf256.c could raise a non-definition issue (if a GF16_LOOKUP macro is defined)
+-Use lookup tables in gf_operations file
 
 -Make fill_matrix a friend function or directly a class method
 
 **C**
--use portable placeholder for printf and uint
-
 -Fix rainbow generating 1 byte for gf16
+
+- Improve rref performance
 
 -For getters and setters: you need to consider the ratio between the actual size of the type and the user-specified size
     - maybe use unions and bitfields?

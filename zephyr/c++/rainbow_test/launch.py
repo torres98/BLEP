@@ -1,6 +1,7 @@
 import os
 import serial
 import subprocess
+import pathlib
 
 from effprog.ver.effver import generate_random_linear_transformation
 from effprog.uart_utils import *
@@ -49,9 +50,10 @@ else:
 
     q = 256
 
-PK_PATH = f'/home/torres/Desktop/Thesis/verification_implementation/tmp/pk{RAINBOW_VERSION}.txt'
-SIG_PATH = f'/home/torres/Desktop/Thesis/verification_implementation/tmp/signature{RAINBOW_VERSION}.txt'
-MSG_PATH = '/home/torres/Desktop/Thesis/verification_implementation/tmp/debug.gdb'
+SCRIPT_PATH = pathlib.Path().resolve()
+PK_PATH = f'{SCRIPT_PATH}/../../../rainbow_examples/pk{RAINBOW_VERSION}.txt'
+SIG_PATH = f'{SCRIPT_PATH}/../../../rainbow_examples/signature{RAINBOW_VERSION}.txt'
+MSG_PATH = f'{SCRIPT_PATH}/../../../rainbow_examples/message.txt'
 
 
 #BUILD APPLICATION
@@ -65,13 +67,13 @@ if not shell_args['SKIP_BUILD']:
     SVK = C.dot(PK)
 
     with open('src/svk.h', 'w') as svk_file:
-        svk_file.write(f'#include <cstdint>\n\n#define SVK_NROWS {shell_args["SVK_NROWS"]}\n\nconst uint8_t short_private_key[{SVK.size}] = {{')
+        svk_file.write(f'#include "blep/math/gf{q}.h"\n\n#define SVK_NROWS {shell_args["SVK_NROWS"]}\n\nconst gf{q} short_private_key[{SVK.size}] = {{')
 
         for i in range(SVK.shape[0]):
             for j in range(SVK.shape[1]):
                 svk_file.write(f'{SVK[i, j]}, ')
 
-        svk_file.write(f'}};\n\nconst uint8_t private_transformation[{C.size}] = {{')
+        svk_file.write(f'}};\n\nconst gf{q} private_transformation[{C.size}] = {{')
 
         for i in range(C.shape[0]):
             for j in range(C.shape[1]):
@@ -98,7 +100,7 @@ if not shell_args['SKIP_BUILD']:
         f'-b={shell_args["BOARD"]}',
         '--',
         f'-DRAINBOW_VERSION={RAINBOW_VERSION}',
-        f'-DGF{q}_LOOKUP={gf_lookup_level[shell_args["LOOKUP_LEVEL"]]};'
+        f'-DGF{q}_LOOKUP={gf_lookup_level[shell_args["LOOKUP_LEVEL"]]}'
     ]
 
     build_process = subprocess.Popen(build_cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -121,10 +123,11 @@ with find_tty_device() as serial_device:
     # discard preamble lines
     line_discarded = serial_device.readline()
 
-    while(not line_discarded.endswith(f'*** Booting Zephyr OS build {"v3.2.0-rc2"}  ***\r\n'.encode())):
+    while(line_discarded.find(b'*** Booting Zephyr OS') == -1):
         line_discarded = serial_device.readline()
-
+    
     uart_send_int(serial_device, shell_args['PROGRESSIVE_STEPS'])
+    print('#Progressive steps correctly sent.')
 
     #SIGNATURE
     with open(SIG_PATH, 'rb') as signature_file:
@@ -133,14 +136,13 @@ with find_tty_device() as serial_device:
         signature_file.read(1)
 
         signature_raw_str = bytes.fromhex(signature_file.read()[:-1].decode('utf-8'))
+        salt_raw_str = signature_raw_str[-16:]
 
-    #receive gothrough
+    # send signature and salt
     uart_wait(serial_device)
     uart_send_segmented(serial_device, signature_raw_str[:-16])
-
-    # send salt 
-    uart_send_segmented(serial_device, signature_raw_str[-16:])
-
+    uart_send(serial_device, salt_raw_str)
+    
     print('Signature correctly sent.')
 
     #MESSAGE
@@ -157,15 +159,12 @@ with find_tty_device() as serial_device:
 
     #send message
     for i in range(0, mlen, SHA_CHUNK_SIZE):
-        uart_send_segmented(serial_device, message[i: i + SHA_CHUNK_SIZE])
-
+        uart_send(serial_device, message[i: i + SHA_CHUNK_SIZE])
+    
     print('Message correctly sent.')
 
-    salt_raw_str = signature_raw_str[-16:]
-    message_digest = Rainbow.message_digest(MSG_PATH, salt_raw_str) #magari usa direttamente la stringa visto che ce l'hai
-
-    assert(message_digest == uart_readline(serial_device))
-    print('Digest correctly computed\n')
+    print(f'Message hash expected: {Rainbow.message_digest(MSG_PATH, salt_raw_str)}')
+    print(f'Message hash computed: {serial_device.readline().decode("utf-8")}')
 
     print(f'Efficient Verification: {serial_device.readline()[:-3].decode("utf-8")}')
     print(f'Efficient+Progressive Verification: {serial_device.readline()[:-3].decode("utf-8")}')

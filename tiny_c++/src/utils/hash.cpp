@@ -25,12 +25,12 @@ void sha256_from_device(unsigned char *output_buffer, unsigned long long mlen) {
 	unsigned int nchunks = (mlen >> 15) + 1;
 	
 	for (unsigned int i = 0; i < nchunks - 1; i++) {   
-		read_n_bytes_segmented(input_buffer, CHUNK_SIZE);
+		read_n_bytes(input_buffer, CHUNK_SIZE);
 		tc_sha256_update(&s, input_buffer, CHUNK_SIZE);
 	}
 
 	// read last chunk
-	read_n_bytes_segmented(input_buffer, mlen & (CHUNK_SIZE - 1));
+	read_n_bytes(input_buffer, mlen & (CHUNK_SIZE - 1));
 	tc_sha256_update(&s, input_buffer, mlen & (CHUNK_SIZE - 1));
 
 	tc_sha256_final(output_buffer, &s);
@@ -55,12 +55,12 @@ void sha384_from_device(unsigned char *output_buffer, unsigned long long mlen) {
 	unsigned int nchunks = (mlen >> 15) + 1;
 	
 	for (unsigned int i = 0; i < nchunks - 1; i++) {   
-		read_n_bytes_segmented(input_buffer, CHUNK_SIZE);
+		read_n_bytes(input_buffer, CHUNK_SIZE);
 		tc_sha384_update(&s, input_buffer, CHUNK_SIZE);
 	}
 
 	// read last chunk
-	read_n_bytes_segmented(input_buffer, mlen & (CHUNK_SIZE - 1));
+	read_n_bytes(input_buffer, mlen & (CHUNK_SIZE - 1));
 	tc_sha384_update(&s, input_buffer, mlen & (CHUNK_SIZE - 1));
 
 	tc_sha384_final(output_buffer, &s);
@@ -85,12 +85,12 @@ void sha512_from_device(unsigned char *output_buffer, unsigned long long mlen) {
 	unsigned int nchunks = (mlen >> 15) + 1;
 	
 	for (unsigned int i = 0; i < nchunks - 1; i++) {   
-		read_n_bytes_segmented(input_buffer, CHUNK_SIZE);
+		read_n_bytes(input_buffer, CHUNK_SIZE);
 		tc_sha512_update(&s, input_buffer, CHUNK_SIZE);
 	}
 
 	// read last chunk
-	read_n_bytes_segmented(input_buffer, mlen & (CHUNK_SIZE - 1));
+	read_n_bytes(input_buffer, mlen & (CHUNK_SIZE - 1));
 	tc_sha512_update(&s, input_buffer, mlen & (CHUNK_SIZE - 1));
 
 	tc_sha512_final(output_buffer, &s);

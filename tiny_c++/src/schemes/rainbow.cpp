@@ -27,85 +27,62 @@
 
 using Rainbow::gf;
 
-void Rainbow::get_message_digest(const unsigned char *message, unsigned char *output_buffer, unsigned int mlen) {
-    HASH_RAW_STR(message, output_buffer, mlen);
+void Rainbow::get_message_digest(const unsigned char *message, unsigned int mlen, unsigned char *digest_buffer) {
+    HASH_RAW_STR(message, digest_buffer, mlen);
 }
 
-void Rainbow::get_message_digest(unsigned char *output_buffer, unsigned int mlen) {
+void Rainbow::get_message_digest(unsigned int mlen, unsigned char *digest_buffer) {
     send_ok(); //maybe move inside function
 
-    HASH_FROM_DEVICE(output_buffer, mlen);
+    HASH_FROM_DEVICE(digest_buffer, mlen);
 }
 
-void Rainbow::get_complete_digest(unsigned char *output_buffer, const unsigned char *message_digest, const unsigned char* salt) {
+void Rainbow::get_complete_digest(const unsigned char *message_digest, const unsigned char* salt, unsigned char *digest_buffer) {
     unsigned char temp_buffer[SHA_DIGEST_SIZE + SALT_SIZE];
 
     // temp_buffer = H(m) || salt
     std::memcpy(temp_buffer, message_digest, SHA_DIGEST_SIZE);
     std::memcpy(temp_buffer + SHA_DIGEST_SIZE, salt, SALT_SIZE);
     
-    HASH_RAW_STR(temp_buffer, output_buffer, SHA_DIGEST_SIZE + SALT_SIZE);
+    HASH_RAW_STR(temp_buffer, digest_buffer, SHA_DIGEST_SIZE + SALT_SIZE);
 
     #if RAINBOW_VERSION != 1
-        HASH_RAW_STR(output_buffer, temp_buffer, SHA_DIGEST_SIZE);
-        memcpy(output_buffer + SHA_DIGEST_SIZE, temp_buffer, n_polynomials - SHA_DIGEST_SIZE);
+        HASH_RAW_STR(digest_buffer, temp_buffer, SHA_DIGEST_SIZE);
+        memcpy(digest_buffer + SHA_DIGEST_SIZE, temp_buffer, n_polynomials - SHA_DIGEST_SIZE);
     #endif
 }
 
-void Rainbow::get_complete_digest(unsigned char *output_buffer, const unsigned char* salt, unsigned int mlen) {
+void Rainbow::get_complete_digest(const unsigned char* salt, unsigned int mlen, unsigned char *digest_buffer) {
     unsigned char temp_buffer[SHA_DIGEST_SIZE + SALT_SIZE];
 
-    //get_message_digest(temp_buffer, mlen);
+    get_message_digest(mlen, temp_buffer);
     
     // copy the salt at the end of the array (digest = H(m) || salt)
     memcpy(temp_buffer + SHA_DIGEST_SIZE, salt, SALT_SIZE);
 
-    HASH_RAW_STR(temp_buffer, output_buffer, SHA_DIGEST_SIZE + SALT_SIZE);
+    HASH_RAW_STR(temp_buffer, digest_buffer, SHA_DIGEST_SIZE + SALT_SIZE);
 
     #if RAINBOW_VERSION != 1
-        HASH_RAW_STR(output_buffer, temp_buffer, SHA_DIGEST_SIZE);
-        memcpy(output_buffer + SHA_DIGEST_SIZE, temp_buffer, n_polynomials - SHA_DIGEST_SIZE);
+        HASH_RAW_STR(digest_buffer, temp_buffer, SHA_DIGEST_SIZE);
+        memcpy(digest_buffer + SHA_DIGEST_SIZE, temp_buffer, n_polynomials - SHA_DIGEST_SIZE);
     #endif
 }
 
 VectorDS<gf> Rainbow::parse_signature(unsigned char *salt_buffer) {
     VectorDS<gf> s = VectorDS<gf>(N);
 
-    for (unsigned short i = 0; i < n_variables; i++)
-        s.set(i, sys_rand32_get());
-
-    // read salt
-    sys_rand_get(salt_buffer, SALT_SIZE);
-
-    // compute the quadratic products
-    unsigned int h = N - 1;
-
-    for (unsigned int i = n_variables; i > 0; i--) {
-        for (unsigned int j = n_variables; j >= i; j--) {
-            s.set(h--, s(i-1) * s(j-1));
-        }
-    }
-
-    return s;
-}
-
-/*VectorDS<gf> Rainbow::parse_signature(unsigned char *salt_buffer) {
-    VectorDS<gf> s = VectorDS<gf>(N);
-
     send_ok();
 
     #if RAINBOW_VERSION == 1
-        for (unsigned short i = 0; i < n_variables/(2*SEGMENT_SIZE); i++) {
-            receive_segment();
+        // N.B. the signature is sent in ??? endian
+        receive_n_bytes(SEGMENT_SIZE);
 
-            // inverted order
-            for (unsigned short h = 0; h < SEGMENT_SIZE; h++) {
-                s.set(2*h, gf(uart_rx_buffer[h]));
-                s.set(2*h + 1, gf(uart_rx_buffer[h] >> 4));
-            }
+        for (unsigned short h = 0; h < SEGMENT_SIZE; h++) {
+            s.set(2*h, gf(uart_rx_buffer[h]));
+            s.set(2*h + 1, gf(uart_rx_buffer[h] >> 4));
         }
 
-        unsigned short last_segment_size = (n_variables % SEGMENT_SIZE) / 2;
+        unsigned short last_segment_size = (n_variables % (2*SEGMENT_SIZE)) / 2;
         receive_n_bytes(last_segment_size);
 
         for (unsigned short h = 0; h < last_segment_size; h++) {
@@ -115,11 +92,11 @@ VectorDS<gf> Rainbow::parse_signature(unsigned char *salt_buffer) {
 
     #else
         for (unsigned short i = 0; i < n_variables/SEGMENT_SIZE; i++) {
-            receive_segment();
+            receive_n_bytes(SEGMENT_SIZE);
 
             // inverted order
             for (unsigned short h = 0; h < SEGMENT_SIZE; h++)
-                s.set(h, gf(uart_rx_buffer[h]));
+                s.set(h + (SEGMENT_SIZE * i), gf(uart_rx_buffer[h]));
         }
     
         unsigned short last_segment_size = n_variables % SEGMENT_SIZE;
@@ -141,7 +118,7 @@ VectorDS<gf> Rainbow::parse_signature(unsigned char *salt_buffer) {
             s.set(h--, s(i-1) * s(j-1));
 
     return s;
-}*/
+}
 
 VectorDS<gf> Rainbow::get_result_vector(const unsigned char* digest) {
     VectorDS<gf> u = VectorDS<gf>(n_polynomials);

@@ -25,7 +25,7 @@ int main() {
     // declare variables
     uint32_t result_vector_time = 0, eff_verification_time = 0, effprog_verification_time = 0;
     
-    Rainbow::get_message_digest(message, message_digest, strlen((const char*) message));
+    Rainbow::get_message_digest(message, message_digest, sizeof(message));
 
     // load the linear transformation and the short verification key as a Matrix objects
     MatrixDS<gf> SVK = MatrixDS<gf>((gf*) short_private_key, SVK_NROWS, Rainbow::N);

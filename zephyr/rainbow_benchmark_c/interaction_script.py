@@ -23,25 +23,24 @@ GF_LOOKUP_LEVELS_CONVERSION_TABLE = {
 def read_zephyr_output(proc_stdout):
     output_line = proc_stdout.readline()
 
-    while(not output_line.startswith(b'*** Booting')):
+    while(not output_line.startswith('*** Booting')):
         output_line = proc_stdout.readline()
 
-    for line in iter(proc_stdout.readline, b''):
-        print(line.decode('utf-8'), end='')
+    for line in iter(proc_stdout.readline, ''):
+        print(line, end='')
 
 # <sig> and <frame> args are not needed
 def interrupt_signal_handler(*_):
     global zephyr_process
-    os.killpg(os.getpgid(zephyr_process.pid), signal.SIGTERM)
-    
-    global read_output_thread
-    read_output_thread.join()
+    zephyr_process.kill()
+
+    #global read_output_thread
+    #read_output_thread.join()
     print('\nThank you for using BLEP, bye!')
+    exit()
 
 def find_tty_device():
     serial_device = None
-
-    print(os.listdir('/dev/'))
 
     for filename in os.listdir('/dev/'):
         if filename.startswith('tty'):
@@ -139,7 +138,7 @@ if not shell_args['SKIP_BUILD']:
         exit(-1)
 
     print('DONE')
-    print(f'Memory region{build_output[0].decode("utf-8").split("Memory region")[1]}')
+    print('\n'.join(build_output[0].decode('utf-8').splitlines()[-3:]))
 
 signal.signal(signal.SIGINT, interrupt_signal_handler)
 
@@ -148,13 +147,108 @@ print("""
 ****To interrupt the application press CTRL+C at any time****
 *************************************************************
 """)
-      
+import tty 
 # LAUNCH APPLICATION
 if shell_args['BOARD'].startswith('qemu'):
-    zephyr_process = subprocess.Popen(shell_args['FLASH_CMD'], stdout=subprocess.PIPE, preexec_fn=os.setsid)
 
-    read_output_thread = threading.Thread(target=read_zephyr_output, args=(zephyr_process.stdout,))
-    read_output_thread.start()
+    new_stdin = open("input.txt", "wb+")
+
+    with subprocess.Popen(shell_args['FLASH_CMD'], stdin=new_stdin, stdout=subprocess.PIPE) as zephyr_process:
+        zephyr_out = zephyr_process.stdout
+
+        line_discarded = zephyr_out.readline()
+
+        while(not line_discarded.startswith(b'*** Booting')):
+            line_discarded = zephyr_out.readline()
+        
+        assert zephyr_out.readline() == b'OK\n'
+        print("OK")
+
+        r = new_stdin.write(shell_args['PROGRESSIVE_STEPS'].to_bytes(4, 'little'))
+        new_stdin.flush()
+        assert r == 4
+        print("IC")
+        #zephyr_process.stdin.write(shell_args['PROGRESSIVE_STEPS'].to_bytes(4, 'big'))
+        #zephyr_process.stdin.flush()
+        print(zephyr_out.readline())
+        print(zephyr_out.readline())
+        print(zephyr_out.readline())
+        print(zephyr_out.readline())
+        assert zephyr_process.stdout.readline() == b'ACK\n'
+        
+        print('Number of progressive steps correctly sent.')
+
+        zephyr_process.write(SAMPLE_SIZE.to_bytes(4, 'little'))
+        assert zephyr_out.readline()==b'ACK\n'
+        
+        print('Sample size correctly sent.')
+        
+        # MESSAGE
+        with open(MSG_PATH, 'rb') as message_file:
+            message = message_file.read()
+
+        mlen = len(message)
+        zephyr_out.write(mlen.to_bytes(4, 'little'))
+        assert zephyr_out.readline()==b'ACK\n'
+        print('Message length correctly sent.')
+
+        assert zephyr_out.readline()==b'OK\n'
+
+        #uart_send_segmented(serial_device, msg):
+        for i in range(0, mlen, SEGMENT_SIZE):
+            zephyr_out.write(message[i: i + SEGMENT_SIZE])
+            assert zephyr_out.readline()==b'ACK\n'
+
+        print('Message correctly sent.')
+        
+        #read_output_thread = threading.Thread(target=read_zephyr_output, args=(zephyr_process,))
+        #read_output_thread.start()
+        
+
+    """
+    import pexpect
+    
+    zephyr_process = pexpect.spawn('/bin/bash', echo=False)
+    tty.setraw(zephyr_process.child_fd)
+    zephyr_process.sendline('stty -icanon')
+    zephyr_process.sendline(' '.join(shell_args['FLASH_CMD'])) # = pexpect.spawn(shell_args['FLASH_CMD'][0], shell_args['FLASH_CMD'][1:], echo=False, timeout=3)
+
+    zephyr_process.expect('\*\*\* Booting .*\*\*\*\r\r\n')
+    zephyr_process.expect('OK\r\n')
+    
+    zephyr_process.write(shell_args['PROGRESSIVE_STEPS'].to_bytes(4, 'little'))
+    print(zephyr_process.readline())
+    print(zephyr_process.readline())
+    print(zephyr_process.readline())
+    print(zephyr_process.readline())
+    zephyr_process.expect('ACK\r\n')
+    print('Number of progressive steps correctly sent.')
+
+    zephyr_process.send(SAMPLE_SIZE.to_bytes(4, 'little'))
+    zephyr_process.expect('ACK\r\n')
+    print('Sample size correctly sent.')
+    """
+
+    # MESSAGE
+    with open(MSG_PATH, 'rb') as message_file:
+        message = message_file.read()
+
+    mlen = len(message)
+    zephyr_process.send(mlen.to_bytes(4, 'little'))
+    zephyr_process.expect('ACK\r\n')
+    print('Message length correctly sent.')
+
+    zephyr_process.expect('OK\r\n')
+
+    #uart_send_segmented(serial_device, msg):
+    for i in range(0, mlen, SEGMENT_SIZE):
+        zephyr_process.send(message[i: i + SEGMENT_SIZE])
+        zephyr_process.expect('ACK\r\n')
+
+    print('Message correctly sent.')
+        #reply = serial_device.readline()
+        #assert reply == b'ACK\n', f'Received unexpected reply ({reply})' #wait for confermation
+
 else:
     try:
         subprocess.check_call(shell_args['FLASH_CMD'])

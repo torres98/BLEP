@@ -18,6 +18,16 @@ using Rainbow::gf;
 unsigned char salt[Rainbow::SALT_SIZE];
 unsigned char final_digest[Rainbow::FINAL_DIGEST_SIZE];
 
+template <typename V>
+void print_buffer(const V buffer, unsigned n, int width=2) {
+    std::cout << std::setfill('0') << std::hex;
+
+    for (unsigned int i = 0; i < n; i++)
+        std::cout << std::setw(width) << (unsigned) buffer[i];
+
+    std::cout << std::endl;
+}
+
 int main() {
     uint16_t PROGRESSIVE_STEPS = read_uint32();
 
@@ -26,23 +36,18 @@ int main() {
 
     // read message length (4 bytes) 
     uint32_t mlen = read_uint32();
-    
+
     // read message and compute its Rainbow digest
-    Rainbow::get_complete_digest(final_digest, salt, mlen);
+    Rainbow::get_complete_digest(salt, mlen, final_digest);
 
-    std::cout << std::setfill('0') << std::hex;
-
-    for (unsigned int i = 0; i < Rainbow::FINAL_DIGEST_SIZE; i++)
-        std::cout << std::setw(2) << (unsigned int) final_digest[i];
-
-    std::cout << std::endl;
+    print_buffer(final_digest, Rainbow::FINAL_DIGEST_SIZE);
 
     // load the linear transformation and the short verification key as a Matrix objects
-    MatrixDS<gf> SVK = MatrixDS<gf>((gf*) short_private_key, SVK_NROWS, Rainbow::N);
-    MatrixDS<gf> C = MatrixDS<gf>((gf*) private_transformation, SVK_NROWS, Rainbow::n_polynomials);
+    const MatrixDS<gf> SVK = MatrixDS<gf>((gf*) short_private_key, SVK_NROWS, Rainbow::N);
+    const MatrixDS<gf> C = MatrixDS<gf>((gf*) private_transformation, SVK_NROWS, Rainbow::n_polynomials);
     
     // Compute reduced result vector
-    VectorDS<gf> u_eff = VectorDS<gf>(C * Rainbow::get_result_vector(final_digest));
+    VectorDS<gf> u_eff = C * Rainbow::get_result_vector(final_digest);
 
     // Perform efficient verification
     if (verify_signature(SVK, s, u_eff))

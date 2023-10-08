@@ -6,7 +6,7 @@ project(RAINBOW-BENCHMARK-CPP LANGUAGES CXX)
 
 add_subdirectory(src/tiny_blep/)
 
-if (BOARD MATCHES "^qemu")
+if (BOARD MATCHES "^sqemu")
     target_sources(app PRIVATE src/qemu_benchmark.cpp)
     target_compile_definitions(app PRIVATE SAMPLE_SIZE=${SAMPLE_SIZE} PROGRESSIVE_STEPS=${PROGRESSIVE_STEPS})
 else()
